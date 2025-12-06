@@ -1,0 +1,18 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+---
+
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Organization
+status:
+  organizationId: {{ $organizationId | quote }}
+  managementAccountId: {{ $managementAccountId | quote }}
+  rootId: {{ $rootId | quote }}
+  {{ if gt (len $observedOUs) 0 }}
+  organizationalUnits:
+    {{ range $path, $state := $observedOUs }}
+    {{ $path }}: {{ $state.id | quote }}
+    {{ end }}
+  {{ end }}
+  ready: {{ $organizationReady }}

@@ -1,0 +1,21 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+---
+
+apiVersion: organizations.aws.m.upbound.io/v1beta2
+kind: Organization
+metadata:
+  name: {{ $orgName }}
+  annotations:
+    {{ setResourceNameAnnotation "organization" }}
+spec:
+  managementPolicies: {{ toJson $managementPolicies }}
+  forProvider:
+    awsServiceAccessPrincipals: []
+    {{ if eq $featureSet "ALL" }}
+    enabledPolicyTypes: {{ toJson $enabledPolicyTypes }}
+    {{ end }}
+    featureSet: {{ $featureSet }}
+  providerConfigRef:
+    name: {{ $awsProviderConfig }}

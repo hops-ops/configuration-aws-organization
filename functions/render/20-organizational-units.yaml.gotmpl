@@ -1,0 +1,89 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+{{ if and $organizationReady (gt (len $organizationalUnits) 0) (ne $rootId "Pending") }}
+
+# Create root-level OUs
+{{ range $organizationalUnits }}
+{{ $ouName := .name }}
+{{ $ouPath := printf "/%s" $ouName }}
+{{ $resourceName := printf "ou-%s" $ouName }}
+---
+
+apiVersion: organizations.aws.m.upbound.io/v1beta2
+kind: OrganizationalUnit
+metadata:
+  name: {{ $resourceName }}
+  annotations:
+    {{ setResourceNameAnnotation $resourceName }}
+spec:
+  managementPolicies: {{ toJson $managementPolicies }}
+  forProvider:
+    name: {{ $ouName }}
+    parentId: {{ $rootId | quote }}
+    tags: {{ toJson $tags }}
+  providerConfigRef:
+    name: {{ $awsProviderConfig }}
+
+# Create child OUs if parent is ready
+{{ $parentObservation := get $observedOUs $ouPath }}
+{{ if $parentObservation }}
+  {{ if $parentObservation.ready }}
+    {{ $children := .children | default (list) }}
+    {{ range $children }}
+{{ $childName := .name }}
+{{ $childPath := printf "%s/%s" $ouPath $childName }}
+{{ $childResourceName := printf "ou-%s-%s" $ouName $childName }}
+---
+
+apiVersion: organizations.aws.m.upbound.io/v1beta2
+kind: OrganizationalUnit
+metadata:
+  name: {{ $childResourceName }}
+  annotations:
+    {{ setResourceNameAnnotation $childResourceName }}
+spec:
+  managementPolicies: {{ toJson $managementPolicies }}
+  forProvider:
+    name: {{ $childName }}
+    parentIdRef:
+      name: {{ $resourceName }}
+    tags: {{ toJson $tags }}
+  providerConfigRef:
+    name: {{ $awsProviderConfig }}
+
+# Create grandchild OUs if child is ready
+{{ $childObservation := get $observedOUs $childPath }}
+{{ if $childObservation }}
+  {{ if $childObservation.ready }}
+    {{ $grandchildren := .children | default (list) }}
+    {{ range $grandchildren }}
+{{ $grandchildName := .name }}
+{{ $grandchildPath := printf "%s/%s" $childPath $grandchildName }}
+{{ $grandchildResourceName := printf "ou-%s-%s-%s" $ouName $childName $grandchildName }}
+---
+
+apiVersion: organizations.aws.m.upbound.io/v1beta2
+kind: OrganizationalUnit
+metadata:
+  name: {{ $grandchildResourceName }}
+  annotations:
+    {{ setResourceNameAnnotation $grandchildResourceName }}
+spec:
+  managementPolicies: {{ toJson $managementPolicies }}
+  forProvider:
+    name: {{ $grandchildName }}
+    parentIdRef:
+      name: {{ $childResourceName }}
+    tags: {{ toJson $tags }}
+  providerConfigRef:
+    name: {{ $awsProviderConfig }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+{{ end }}
+
+{{ end }}

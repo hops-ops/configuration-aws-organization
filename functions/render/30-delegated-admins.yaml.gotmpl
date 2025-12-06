@@ -1,0 +1,32 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+{{ if and $organizationReady (gt (len $delegatedAdministrators) 0) }}
+
+# Create delegated administrator registrations
+{{ range $index, $admin := $delegatedAdministrators }}
+{{ $servicePrincipal := $admin.servicePrincipal }}
+{{ $accountRef := $admin.accountRef }}
+{{ $accountName := $accountRef.name }}
+{{ $resourceName := printf "delegated-admin-%d" $index }}
+---
+
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: DelegatedAdministrator
+metadata:
+  name: {{ $resourceName }}
+  annotations:
+    {{ setResourceNameAnnotation $resourceName }}
+spec:
+  managementPolicies: {{ toJson $managementPolicies }}
+  forProvider:
+    accountIdSelector:
+      matchLabels:
+        crossplane.io/claim-name: {{ $accountName }}
+    servicePrincipal: {{ $servicePrincipal }}
+  providerConfigRef:
+    name: {{ $awsProviderConfig }}
+
+{{ end }}
+
+{{ end }}

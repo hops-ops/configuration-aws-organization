@@ -1,0 +1,33 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+# Get the composite resource
+{{ $xr := getCompositeResource . }}
+{{ $spec := $xr.spec }}
+{{ $metadata := $xr.metadata }}
+
+# Management policies
+{{ $managementPolicies := $spec.managementPolicies | default (list "*") }}
+
+# AWS settings
+{{ $aws := $spec.aws | default (dict) }}
+{{ $awsProviderConfig := $aws.providerConfig | default "default" }}
+
+# Management mode
+{{ $managementMode := $spec.managementMode | default "self" }}
+
+# ForProvider settings
+{{ $forProvider := $spec.forProvider | default (dict) }}
+{{ $featureSet := $forProvider.featureSet | default "ALL" }}
+{{ $enabledPolicyTypes := $forProvider.enabledPolicyTypes | default (list "SERVICE_CONTROL_POLICY" "TAG_POLICY" "BACKUP_POLICY" "AISERVICES_OPT_OUT_POLICY") }}
+{{ $organizationalUnits := $forProvider.organizationalUnits | default (list) }}
+{{ $delegatedAdministrators := $forProvider.delegatedAdministrators | default (list) }}
+
+# Tags
+{{ $defaultTags := dict "hops" "true" }}
+{{ $userTags := $forProvider.tags | default (dict) }}
+{{ $tags := merge $defaultTags $userTags }}
+
+# Resource naming
+{{ $orgName := $metadata.name }}
+{{ $namespace := $metadata.namespace }}

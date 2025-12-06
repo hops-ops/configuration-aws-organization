@@ -1,0 +1,21 @@
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Organization
+metadata:
+  name: acme-org
+  namespace: customer-acme
+spec:
+  managementPolicies:
+    - "*"
+  forProvider:
+    featureSet: ALL
+    organizationalUnits:
+      - name: Security
+      - name: Infrastructure
+      - name: Workloads
+        children:
+          - name: Prod
+          - name: Non-Prod
+      - name: Sandbox
+    tags:
+      customer: acme
+      hops: "true"

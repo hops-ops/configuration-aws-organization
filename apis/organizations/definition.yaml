@@ -1,0 +1,136 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: organizations.aws.hops.ops.com.ai
+spec:
+  scope: Namespaced
+  group: aws.hops.ops.com.ai
+  names:
+    kind: Organization
+    plural: organizations
+  versions:
+  - name: v1alpha1
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              managementMode:
+                type: string
+                description: Management mode for the organization. 'self' means manage in the same account, 'managed' means manage from a different account.
+                enum:
+                  - self
+                  - managed
+                default: self
+              aws:
+                properties:
+                  providerConfig:
+                    type: string
+                    description: AWS provider config name to use for organization resources.
+                type: object
+              managementPolicies:
+                description: ManagementPolicies for AWS resources. Defaults to ["*"] which includes all operations (Create, Observe, Update, Delete, LateInitialize). To orphan resources on deletion, use ["Create", "Observe", "Update", "LateInitialize"].
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - "*"
+                    - Create
+                    - Observe
+                    - Update
+                    - Delete
+                    - LateInitialize
+                default: ["*"]
+              forProvider:
+                properties:
+                  featureSet:
+                    type: string
+                    description: Feature set for the organization. ALL enables all features including SCPs, CONSOLIDATED_BILLING only enables billing features.
+                    enum:
+                      - ALL
+                      - CONSOLIDATED_BILLING
+                    default: ALL
+                  enabledPolicyTypes:
+                    type: array
+                    description: Policy types to enable for the organization. Only applies when featureSet is ALL.
+                    items:
+                      type: string
+                      enum:
+                        - SERVICE_CONTROL_POLICY
+                        - TAG_POLICY
+                        - BACKUP_POLICY
+                        - AISERVICES_OPT_OUT_POLICY
+                    default:
+                      - SERVICE_CONTROL_POLICY
+                      - TAG_POLICY
+                      - BACKUP_POLICY
+                      - AISERVICES_OPT_OUT_POLICY
+                  organizationalUnits:
+                    type: array
+                    description: Organizational units to create. Creates a hierarchical OU structure based on AWS best practices.
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Name of the organizational unit.
+                        children:
+                          type: array
+                          description: Nested child OUs.
+                          items:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                      required:
+                        - name
+                  delegatedAdministrators:
+                    type: array
+                    description: Delegated administrator accounts for AWS services.
+                    items:
+                      type: object
+                      properties:
+                        servicePrincipal:
+                          type: string
+                          description: AWS service principal (e.g., ipam.amazonaws.com, sso.amazonaws.com).
+                        accountRef:
+                          type: object
+                          description: Reference to the Account resource.
+                          properties:
+                            name:
+                              type: string
+                          required:
+                            - name
+                      required:
+                        - servicePrincipal
+                        - accountRef
+                  tags:
+                    type: object
+                    description: Tags to apply to the organization and OUs.
+                    x-kubernetes-preserve-unknown-fields: true
+                type: object
+            required:
+              - managementPolicies
+            type: object
+          status:
+            properties:
+              organizationId:
+                type: string
+                description: AWS Organization ID (e.g., o-abc123xyz).
+              managementAccountId:
+                type: string
+                description: AWS account ID of the management account.
+              rootId:
+                type: string
+                description: Root organizational unit ID.
+              organizationalUnits:
+                type: object
+                description: Map of OU paths to OU IDs.
+                x-kubernetes-preserve-unknown-fields: true
+              ready:
+                type: boolean
+                description: Indicates whether the organization and all OUs are ready.
+            type: object
+        required:
+        - spec
+        type: object
+    served: true

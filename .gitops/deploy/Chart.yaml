@@ -1,0 +1,5 @@
+apiVersion: v2
+name: configuration-aws-organization
+version: 0.0.0
+description: A Helm chart for AWS Organization configuration
+appVersion: v0.1.0

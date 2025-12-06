@@ -1,0 +1,146 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+# Observed resources for status projection
+{{ $observed := $.observed.resources | default (dict) }}
+
+# Organization observation
+{{ $organizationObservation := get $observed "organization" }}
+{{ $organizationReady := false }}
+{{ $organizationId := "Pending" }}
+{{ $managementAccountId := "Pending" }}
+{{ $rootId := "Pending" }}
+
+{{ with $organizationObservation }}
+  {{ $resource := .resource | default (dict) }}
+  {{ $status := $resource.status | default (dict) }}
+  {{ $conditions := $status.conditions | default (list) }}
+  {{ range $conditions }}
+    {{ $conditionType := default "" (get . "type") }}
+    {{ $conditionStatus := default "" (get . "status") }}
+    {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
+      {{ $organizationReady = true }}
+    {{ end }}
+  {{ end }}
+
+  # Extract organization details
+  {{ $atProvider := $status.atProvider | default (dict) }}
+  {{ $candidateOrgId := $atProvider.id | default "" }}
+  {{ if $candidateOrgId }}
+    {{ $organizationId = $candidateOrgId }}
+  {{ end }}
+  {{ $candidateMgmtAccount := $atProvider.masterAccountId | default "" }}
+  {{ if $candidateMgmtAccount }}
+    {{ $managementAccountId = $candidateMgmtAccount }}
+  {{ end }}
+  {{ $roots := $atProvider.roots | default (list) }}
+  {{ if gt (len $roots) 0 }}
+    {{ $root := index $roots 0 }}
+    {{ $candidateRootId := $root.id | default "" }}
+    {{ if $candidateRootId }}
+      {{ $rootId = $candidateRootId }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+# Build a map of observed OU states
+# Key: OU path, Value: {ready: bool, id: string}
+{{ $observedOUs := dict }}
+
+# Populate observed OUs from organizationalUnits spec
+{{ range $organizationalUnits }}
+  {{ $ouName := .name }}
+  {{ $ouPath := printf "/%s" $ouName }}
+  {{ $resourceName := printf "ou-%s" $ouName }}
+
+  {{ $ouObservation := get $observed $resourceName }}
+  {{ $ouReady := false }}
+  {{ $ouId := "Pending" }}
+
+  {{ with $ouObservation }}
+    {{ $resource := .resource | default (dict) }}
+    {{ $status := $resource.status | default (dict) }}
+    {{ $conditions := $status.conditions | default (list) }}
+    {{ range $conditions }}
+      {{ $conditionType := default "" (get . "type") }}
+      {{ $conditionStatus := default "" (get . "status") }}
+      {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
+        {{ $ouReady = true }}
+      {{ end }}
+    {{ end }}
+
+    {{ $atProvider := $status.atProvider | default (dict) }}
+    {{ $candidateId := $atProvider.id | default "" }}
+    {{ if $candidateId }}
+      {{ $ouId = $candidateId }}
+    {{ end }}
+  {{ end }}
+
+  {{ $_ := set $observedOUs $ouPath (dict "ready" $ouReady "id" $ouId) }}
+
+  # Check for child OUs
+  {{ $children := .children | default (list) }}
+  {{ range $children }}
+    {{ $childName := .name }}
+    {{ $childPath := printf "%s/%s" $ouPath $childName }}
+    {{ $childResourceName := printf "ou-%s-%s" $ouName $childName }}
+
+    {{ $childObservation := get $observed $childResourceName }}
+    {{ $childReady := false }}
+    {{ $childId := "Pending" }}
+
+    {{ with $childObservation }}
+      {{ $resource := .resource | default (dict) }}
+      {{ $status := $resource.status | default (dict) }}
+      {{ $conditions := $status.conditions | default (list) }}
+      {{ range $conditions }}
+        {{ $conditionType := default "" (get . "type") }}
+        {{ $conditionStatus := default "" (get . "status") }}
+        {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
+          {{ $childReady = true }}
+        {{ end }}
+      {{ end }}
+
+      {{ $atProvider := $status.atProvider | default (dict) }}
+      {{ $candidateId := $atProvider.id | default "" }}
+      {{ if $candidateId }}
+        {{ $childId = $candidateId }}
+      {{ end }}
+    {{ end }}
+
+    {{ $_ := set $observedOUs $childPath (dict "ready" $childReady "id" $childId) }}
+
+    # Check for grandchild OUs
+    {{ $grandchildren := .children | default (list) }}
+    {{ range $grandchildren }}
+      {{ $grandchildName := .name }}
+      {{ $grandchildPath := printf "%s/%s" $childPath $grandchildName }}
+      {{ $grandchildResourceName := printf "ou-%s-%s-%s" $ouName $childName $grandchildName }}
+
+      {{ $grandchildObservation := get $observed $grandchildResourceName }}
+      {{ $grandchildReady := false }}
+      {{ $grandchildId := "Pending" }}
+
+      {{ with $grandchildObservation }}
+        {{ $resource := .resource | default (dict) }}
+        {{ $status := $resource.status | default (dict) }}
+        {{ $conditions := $status.conditions | default (list) }}
+        {{ range $conditions }}
+          {{ $conditionType := default "" (get . "type") }}
+          {{ $conditionStatus := default "" (get . "status") }}
+          {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
+            {{ $grandchildReady = true }}
+          {{ end }}
+        {{ end }}
+
+        {{ $atProvider := $status.atProvider | default (dict) }}
+        {{ $candidateId := $atProvider.id | default "" }}
+        {{ if $candidateId }}
+          {{ $grandchildId = $candidateId }}
+        {{ end }}
+      {{ end }}
+
+      {{ $_ := set $observedOUs $grandchildPath (dict "ready" $grandchildReady "id" $grandchildId) }}
+    {{ end }}
+  {{ end }}
+{{ end }}

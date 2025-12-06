@@ -1,0 +1,10 @@
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Organization
+metadata:
+  name: hops-org
+  namespace: platform
+spec:
+  managementPolicies:
+    - "*"
+  forProvider:
+    featureSet: ALL

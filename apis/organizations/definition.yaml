@@ -73,6 +73,28 @@ spec:
                     name:
                       type: string
                       description: Name of the organizational unit.
+                    accounts:
+                      type: array
+                      description: Accounts to create under this organizational unit.
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            description: Account name and metadata.name for the Account composite.
+                          email:
+                            type: string
+                            description: Unique AWS account email address.
+                          providerConfigName:
+                            type: string
+                            description: Management account ProviderConfig to use for this account. Defaults to the Organization AWS providerConfig.
+                          tags:
+                            type: object
+                            description: Tags to merge with the Organization tags for this account.
+                            x-kubernetes-preserve-unknown-fields: true
+                        required:
+                          - name
+                          - email
                     children:
                       type: array
                       description: Nested child OUs.

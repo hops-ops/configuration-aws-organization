@@ -12,6 +12,7 @@ on:
     paths:
       - 'apis/**'
       - 'examples/**'
+      - 'examples/observed-resources/**'
       - 'tests/**'
       - 'functions/**'
       - '.github/workflows/on-pr.yaml'
@@ -25,22 +26,23 @@ permissions:
 
 jobs:
   validate:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/validate.yaml@v0.8.1
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/validate.yaml@v0.10.0
     with:
       examples: |
         [
-          "examples/organizations/example-minimal.yaml",
-          "examples/organizations/example-standard.yaml",
-          "examples/organizations/example-delegated-admin.yaml"
+          { "example": "examples/organizations/example-minimal.yaml" },
+          { "example": "examples/organizations/example-standard.yaml" },
+          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/step-1" },
+          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/step-2" }
         ]
       api_path: apis/organizations
       error_on_missing_schemas: true
 
   test:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/test.yaml@v0.8.1
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/test.yaml@v0.10.0
 
   e2e:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/e2e-aws.yaml@v0.8.1
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/e2e-aws.yaml@v0.10.0
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -50,7 +52,7 @@ jobs:
       - validate
       - test
       - e2e
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/publish.yaml@v0.8.1
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/publish.yaml@v0.10.0
     secrets: inherit
     with:
       tag: pr-${{ github.event.pull_request.number }}-${{ github.sha }}

@@ -12,6 +12,7 @@
 - Automatically merges the `hops: "true"` tag with any caller-provided tags.
 - Projects organization details and OU IDs into status for easy consumption by other XRDs.
 - Ships with validation, testing, and publishing automation.
+- Depends on `configuration-aws-account` so you can vend member accounts alongside the organization.
 
 ## Prerequisites
 
@@ -67,11 +68,23 @@ spec:
   featureSet: ALL
   organizationalUnits:
     - name: Security
+      accounts:
+        - name: security
+          email: security@acme.com
     - name: Infrastructure
+      accounts:
+        - name: shared-services
+          email: shared-services@acme.com
     - name: Workloads
       children:
         - name: Prod
+          accounts:
+            - name: project-x
+              email: project-x@acme.com
         - name: Non-Prod
+          accounts:
+            - name: project-x-dev
+              email: project-x-dev@acme.com
     - name: Sandbox
   tags:
     customer: acme
@@ -92,11 +105,23 @@ spec:
   featureSet: ALL
   organizationalUnits:
     - name: Security
+      accounts:
+        - name: security
+          email: security@acme.com
     - name: Infrastructure
+      accounts:
+        - name: shared-services
+          email: shared-services@acme.com
     - name: Workloads
       children:
         - name: Prod
+          accounts:
+            - name: project-x
+              email: project-x@acme.com
         - name: Non-Prod
+          accounts:
+            - name: project-x-dev
+              email: project-x-dev@acme.com
     - name: Sandbox
   delegatedAdministrators:
     - servicePrincipal: ipam.amazonaws.com
@@ -109,6 +134,8 @@ spec:
     customer: acme
     hops: "true"
 ```
+
+Accounts can optionally be declared under each OU. They render once the OU is Ready, inherit Organization tags (with optional per-account overrides), and automatically use the OU ID as `parentId` when creating the `Account` composite.
 
 ## Organizational Unit Structure
 

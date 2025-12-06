@@ -1,8 +1,8 @@
 apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: Organization
 metadata:
-  name: hops-org
-  namespace: platform
+  name: acme
+  namespace: acme
 spec:
   managementPolicies:
     - "*"

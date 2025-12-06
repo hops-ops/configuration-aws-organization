@@ -29,6 +29,37 @@ spec:
 {{ $parentObservation := get $observedOUs $ouPath }}
 {{ if $parentObservation }}
   {{ if $parentObservation.ready }}
+    {{ $parentId := $parentObservation.id }}
+    {{ if and $parentId (ne $parentId "Pending") }}
+      {{ $accounts := .accounts | default (list) }}
+      {{ range $accounts }}
+        {{ $accountName := .name }}
+        {{ $accountEmail := .email }}
+        {{ $accountProviderConfig := .providerConfigName | default $awsProviderConfig }}
+        {{ $accountTags := merge $tags (.tags | default (dict)) }}
+        {{ $accountResourceName := $accountName }}
+---
+
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Account
+metadata:
+  name: {{ $accountResourceName }}
+  namespace: {{ $namespace }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "account-%s" $accountResourceName) }}
+spec:
+  email: {{ $accountEmail }}
+  parentId: {{ $parentId }}
+  providerConfigName: {{ $accountProviderConfig }}
+  managementPolicies: {{ toJson $managementPolicies }}
+  tags:
+    {{- range $k, $v := $accountTags }}
+    {{ $k }}: {{ quote $v }}
+    {{- end }}
+
+      {{ end }}
+    {{ end }}
+
     {{ $children := .children | default (list) }}
     {{ range $children }}
 {{ $childName := .name }}
@@ -56,6 +87,37 @@ spec:
 {{ $childObservation := get $observedOUs $childPath }}
 {{ if $childObservation }}
   {{ if $childObservation.ready }}
+    {{ $childId := $childObservation.id }}
+    {{ if and $childId (ne $childId "Pending") }}
+      {{ $childAccounts := .accounts | default (list) }}
+      {{ range $childAccounts }}
+        {{ $accountName := .name }}
+        {{ $accountEmail := .email }}
+        {{ $accountProviderConfig := .providerConfigName | default $awsProviderConfig }}
+        {{ $accountTags := merge $tags (.tags | default (dict)) }}
+        {{ $accountResourceName := $accountName }}
+---
+
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Account
+metadata:
+  name: {{ $accountResourceName }}
+  namespace: {{ $namespace }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "account-%s" $accountResourceName) }}
+spec:
+  email: {{ $accountEmail }}
+  parentId: {{ $childId }}
+  providerConfigName: {{ $accountProviderConfig }}
+  managementPolicies: {{ toJson $managementPolicies }}
+  tags:
+    {{- range $k, $v := $accountTags }}
+    {{ $k }}: {{ quote $v }}
+    {{- end }}
+
+      {{ end }}
+    {{ end }}
+
     {{ $grandchildren := .children | default (list) }}
     {{ range $grandchildren }}
 {{ $grandchildName := .name }}

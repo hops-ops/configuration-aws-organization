@@ -1,0 +1,42 @@
+# Simulated observed resources for step 1: Organization is Ready with root ID
+
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta2
+kind: Organization
+metadata:
+  name: acme
+  namespace: acme
+  labels:
+    crossplane.io/composite: acme
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "organization"
+    crossplane.io/composition-resource-name: "organization"
+  ownerReferences:
+  - apiVersion: aws.hops.ops.com.ai/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Organization
+    name: acme
+    uid: ""
+spec:
+  managementPolicies:
+  - '*'
+  forProvider:
+    awsServiceAccessPrincipals: []
+    enabledPolicyTypes:
+    - SERVICE_CONTROL_POLICY
+    - TAG_POLICY
+    - BACKUP_POLICY
+    - AISERVICES_OPT_OUT_POLICY
+    featureSet: ALL
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+      reason: Available
+      lastTransitionTime: "2024-01-01T00:00:00Z"
+  atProvider:
+    id: "o-abc123"
+    masterAccountId: "111111111111"
+    roots:
+      - id: "r-root"

@@ -13,6 +13,12 @@ This repository publishes the `Organization` configuration package. Use this gui
 - `.gitops/`: GitOps automation usage.
 - `_output/`, `.up/`: Generated artifacts. Remove with `make clean` when needed.
 
+This package now depends on `configuration-aws-account` and can emit `Account` composites directly from OU definitions (rendered after the OU reports Ready).
+
+Use `examples/observed-resources/step-*` to iterate rendering:
+- Step 1: Organization observed as Ready with root ID (renders top-level OUs).
+- Step 2: Organization + OUs observed as Ready (renders accounts under ready OUs).
+
 ## Rendering Guidelines
 
 - Declare every reused value in `00-desired-values.yaml.gotmpl` with sensible defaults. Avoid direct field access in later templates.

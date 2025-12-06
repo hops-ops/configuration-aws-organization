@@ -6,9 +6,9 @@ clean:
 build:
 	up project build
 
-render: render-example-minimal
+render: render-example-standard
 
-render-all: render-example-minimal render-example-standard render-example-delegated-admin
+render-all: render-example-minimal render-example-standard render-example-standard-step-1 render-example-standard-step-2
 
 render-example-minimal:
 	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/example-minimal.yaml
@@ -16,16 +16,25 @@ render-example-minimal:
 render-example-standard:
 	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/example-standard.yaml
 
-render-example-delegated-admin:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/example-delegated-admin.yaml
+render-example-standard-step-1:
+	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/example-standard.yaml --observed-resources=examples/observed-resources/step-1/
+
+render-example-standard-step-2:
+	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/example-standard.yaml --observed-resources=examples/observed-resources/step-2/
 
 test:
 	up test run tests/test*
 
-validate: validate-composition validate-example
+validate: validate-composition-minimal validate-composition-standard-step-1 validate-composition-standard-step-2 validate-example
 
-validate-composition:
+validate-composition-minimal:
 	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/example-minimal.yaml --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
+
+validate-composition-standard-step-1:
+	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/example-standard.yaml --observed-resources=examples/observed-resources/step-1/ --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
+
+validate-composition-standard-step-2:
+	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/example-standard.yaml --observed-resources=examples/observed-resources/step-2/ --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
 
 validate-example:
 	crossplane beta validate apis/organizations examples/organizations

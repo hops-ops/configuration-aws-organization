@@ -23,6 +23,7 @@ spec:
     parentId: {{ $rootId | quote }}
     tags: {{ toJson $tags }}
   providerConfigRef:
+    kind: ProviderConfig
     name: {{ $awsProviderConfig }}
 
 # Create child OUs if parent is ready
@@ -81,6 +82,7 @@ spec:
       name: {{ $resourceName }}
     tags: {{ toJson $tags }}
   providerConfigRef:
+    kind: ProviderConfig
     name: {{ $awsProviderConfig }}
 
 # Create grandchild OUs if child is ready
@@ -139,6 +141,7 @@ spec:
       name: {{ $childResourceName }}
     tags: {{ toJson $tags }}
   providerConfigRef:
+    kind: ProviderConfig
     name: {{ $awsProviderConfig }}
     {{ end }}
   {{ end }}

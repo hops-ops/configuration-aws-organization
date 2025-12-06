@@ -25,6 +25,7 @@ spec:
         crossplane.io/claim-name: {{ $accountName }}
     servicePrincipal: {{ $servicePrincipal }}
   providerConfigRef:
+    kind: ProviderConfig
     name: {{ $awsProviderConfig }}
 
 {{ end }}

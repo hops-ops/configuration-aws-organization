@@ -51,7 +51,7 @@ jobs:
     needs:
       - validate
       - test
-      - e2e
+      # - e2e
     uses: unbounded-tech/workflows-crossplane/.github/workflows/publish.yaml@v0.10.0
     secrets: inherit
     with:

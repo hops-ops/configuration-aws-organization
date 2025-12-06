@@ -1,0 +1,16 @@
+apiVersion: meta.pkg.crossplane.io/v1alpha1
+kind: Configuration
+metadata:
+  name: configuration-aws-organization
+  annotations:
+    meta.crossplane.io/maintainer: Patrick Lee Scott
+    meta.crossplane.io/source: github.com/hops-ops/configuration-aws-organization
+    meta.crossplane.io/description: A Configuration package that defines hops's `Organization` XRD and compositions, including inline account creation.
+spec:
+  dependsOn:
+  - provider: ghcr.io/crossplane-contrib/provider-aws-organizations
+    version: ">=v2.3.0"
+  - configuration: ghcr.io/hops-ops/configuration-aws-account
+    version: ">=v0.3.0"
+  - function: xpkg.crossplane.io/crossplane-contrib/function-auto-ready
+    version: ">=v0.6.0"

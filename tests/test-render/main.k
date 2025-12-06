@@ -7,7 +7,7 @@ _items = [
         spec= {
             assertResources: [
                 {
-                    apiVersion: "organizations.aws.m.upbound.io/v1beta2"
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "Organization"
                     metadata: {
                         name: "acme"
@@ -47,7 +47,7 @@ _items = [
             validate: True
             observedResources: [
                 {
-                    apiVersion: "organizations.aws.m.upbound.io/v1beta2"
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "Organization"
                     metadata: {
                         name: "acme"
@@ -66,7 +66,7 @@ _items = [
                     }
                 },
                 {
-                    apiVersion: "organizations.aws.m.upbound.io/v1beta2"
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
                         name: "ou-Security"
@@ -81,7 +81,7 @@ _items = [
                     }
                 },
                 {
-                    apiVersion: "organizations.aws.m.upbound.io/v1beta2"
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
                         name: "ou-Infrastructure"
@@ -96,7 +96,7 @@ _items = [
                     }
                 },
                 {
-                    apiVersion: "organizations.aws.m.upbound.io/v1beta2"
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
                         name: "ou-Workloads"
@@ -111,7 +111,7 @@ _items = [
                     }
                 },
                 {
-                    apiVersion: "organizations.aws.m.upbound.io/v1beta2"
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
                         name: "ou-Workloads-Prod"
@@ -126,7 +126,7 @@ _items = [
                     }
                 },
                 {
-                    apiVersion: "organizations.aws.m.upbound.io/v1beta2"
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
                         name: "ou-Workloads-Non-Prod"
@@ -170,7 +170,7 @@ _items = [
         spec= {
             assertResources: [
                 {
-                    apiVersion: "organizations.aws.m.upbound.io/v1beta2"
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "Organization"
                     metadata: {
                         name: "acme"

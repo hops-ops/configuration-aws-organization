@@ -1,7 +1,7 @@
 # Simulated observed resources for step 1: Organization is Ready with root ID
 
 ---
-apiVersion: organizations.aws.m.upbound.io/v1beta2
+apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: Organization
 metadata:
   name: acme

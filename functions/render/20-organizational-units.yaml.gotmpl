@@ -10,7 +10,7 @@
 {{ $resourceName := printf "ou-%s" $ouName }}
 ---
 
-apiVersion: organizations.aws.m.upbound.io/v1beta2
+apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: OrganizationalUnit
 metadata:
   name: {{ $resourceName }}
@@ -67,7 +67,7 @@ spec:
 {{ $childResourceName := printf "ou-%s-%s" $ouName $childName }}
 ---
 
-apiVersion: organizations.aws.m.upbound.io/v1beta2
+apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: OrganizationalUnit
 metadata:
   name: {{ $childResourceName }}
@@ -125,7 +125,7 @@ spec:
 {{ $grandchildResourceName := printf "ou-%s-%s-%s" $ouName $childName $grandchildName }}
 ---
 
-apiVersion: organizations.aws.m.upbound.io/v1beta2
+apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: OrganizationalUnit
 metadata:
   name: {{ $grandchildResourceName }}

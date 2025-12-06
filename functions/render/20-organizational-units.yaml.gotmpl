@@ -78,8 +78,7 @@ spec:
   managementPolicies: {{ toJson $managementPolicies }}
   forProvider:
     name: {{ $childName }}
-    parentIdRef:
-      name: {{ $resourceName }}
+    parentId: {{ $parentId | quote }}
     tags: {{ toJson $tags }}
   providerConfigRef:
     kind: ProviderConfig
@@ -137,8 +136,7 @@ spec:
   managementPolicies: {{ toJson $managementPolicies }}
   forProvider:
     name: {{ $grandchildName }}
-    parentIdRef:
-      name: {{ $childResourceName }}
+    parentId: {{ $childId | quote }}
     tags: {{ toJson $tags }}
   providerConfigRef:
     kind: ProviderConfig

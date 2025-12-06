@@ -42,72 +42,69 @@ spec:
                     - Delete
                     - LateInitialize
                 default: ["*"]
-              forProvider:
-                properties:
-                  featureSet:
-                    type: string
-                    description: Feature set for the organization. ALL enables all features including SCPs, CONSOLIDATED_BILLING only enables billing features.
-                    enum:
-                      - ALL
-                      - CONSOLIDATED_BILLING
-                    default: ALL
-                  enabledPolicyTypes:
-                    type: array
-                    description: Policy types to enable for the organization. Only applies when featureSet is ALL.
-                    items:
+              featureSet:
+                type: string
+                description: Feature set for the organization. ALL enables all features including SCPs, CONSOLIDATED_BILLING only enables billing features.
+                enum:
+                  - ALL
+                  - CONSOLIDATED_BILLING
+                default: ALL
+              enabledPolicyTypes:
+                type: array
+                description: Policy types to enable for the organization. Only applies when featureSet is ALL.
+                items:
+                  type: string
+                  enum:
+                    - SERVICE_CONTROL_POLICY
+                    - TAG_POLICY
+                    - BACKUP_POLICY
+                    - AISERVICES_OPT_OUT_POLICY
+                default:
+                  - SERVICE_CONTROL_POLICY
+                  - TAG_POLICY
+                  - BACKUP_POLICY
+                  - AISERVICES_OPT_OUT_POLICY
+              organizationalUnits:
+                type: array
+                description: Organizational units to create. Creates a hierarchical OU structure based on AWS best practices.
+                items:
+                  type: object
+                  properties:
+                    name:
                       type: string
-                      enum:
-                        - SERVICE_CONTROL_POLICY
-                        - TAG_POLICY
-                        - BACKUP_POLICY
-                        - AISERVICES_OPT_OUT_POLICY
-                    default:
-                      - SERVICE_CONTROL_POLICY
-                      - TAG_POLICY
-                      - BACKUP_POLICY
-                      - AISERVICES_OPT_OUT_POLICY
-                  organizationalUnits:
-                    type: array
-                    description: Organizational units to create. Creates a hierarchical OU structure based on AWS best practices.
-                    items:
+                      description: Name of the organizational unit.
+                    children:
+                      type: array
+                      description: Nested child OUs.
+                      items:
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                  required:
+                    - name
+              delegatedAdministrators:
+                type: array
+                description: Delegated administrator accounts for AWS services.
+                items:
+                  type: object
+                  properties:
+                    servicePrincipal:
+                      type: string
+                      description: AWS service principal (e.g., ipam.amazonaws.com, sso.amazonaws.com).
+                    accountRef:
                       type: object
+                      description: Reference to the Account resource.
                       properties:
                         name:
                           type: string
-                          description: Name of the organizational unit.
-                        children:
-                          type: array
-                          description: Nested child OUs.
-                          items:
-                            type: object
-                            x-kubernetes-preserve-unknown-fields: true
                       required:
                         - name
-                  delegatedAdministrators:
-                    type: array
-                    description: Delegated administrator accounts for AWS services.
-                    items:
-                      type: object
-                      properties:
-                        servicePrincipal:
-                          type: string
-                          description: AWS service principal (e.g., ipam.amazonaws.com, sso.amazonaws.com).
-                        accountRef:
-                          type: object
-                          description: Reference to the Account resource.
-                          properties:
-                            name:
-                              type: string
-                          required:
-                            - name
-                      required:
-                        - servicePrincipal
-                        - accountRef
-                  tags:
-                    type: object
-                    description: Tags to apply to the organization and OUs.
-                    x-kubernetes-preserve-unknown-fields: true
+                  required:
+                    - servicePrincipal
+                    - accountRef
+              tags:
                 type: object
+                description: Tags to apply to the organization and OUs.
+                x-kubernetes-preserve-unknown-fields: true
             required:
               - managementPolicies
             type: object

@@ -6,23 +6,22 @@ metadata:
 spec:
   managementPolicies:
     - "*"
-  forProvider:
-    featureSet: ALL
-    organizationalUnits:
-      - name: Security
-      - name: Infrastructure
-      - name: Workloads
-        children:
-          - name: Prod
-          - name: Non-Prod
-      - name: Sandbox
-    delegatedAdministrators:
-      - servicePrincipal: ipam.amazonaws.com
-        accountRef:
-          name: acme-infrastructure
-      - servicePrincipal: securityhub.amazonaws.com
-        accountRef:
-          name: acme-audit
-    tags:
-      customer: acme
-      hops: "true"
+  featureSet: ALL
+  organizationalUnits:
+    - name: Security
+    - name: Infrastructure
+    - name: Workloads
+      children:
+        - name: Prod
+        - name: Non-Prod
+    - name: Sandbox
+  delegatedAdministrators:
+    - servicePrincipal: ipam.amazonaws.com
+      accountRef:
+        name: acme-infrastructure
+    - servicePrincipal: securityhub.amazonaws.com
+      accountRef:
+        name: acme-audit
+  tags:
+    customer: acme
+    hops: "true"

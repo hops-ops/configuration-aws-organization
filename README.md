@@ -50,8 +50,7 @@ metadata:
 spec:
   managementPolicies:
     - "*"
-  forProvider:
-    featureSet: ALL
+  featureSet: ALL
 ```
 
 ### Standard Organization with AWS Best Practice OUs
@@ -65,19 +64,18 @@ metadata:
 spec:
   managementPolicies:
     - "*"
-  forProvider:
-    featureSet: ALL
-    organizationalUnits:
-      - name: Security
-      - name: Infrastructure
-      - name: Workloads
-        children:
-          - name: Prod
-          - name: Non-Prod
-      - name: Sandbox
-    tags:
-      customer: acme
-      hops: "true"
+  featureSet: ALL
+  organizationalUnits:
+    - name: Security
+    - name: Infrastructure
+    - name: Workloads
+      children:
+        - name: Prod
+        - name: Non-Prod
+    - name: Sandbox
+  tags:
+    customer: acme
+    hops: "true"
 ```
 
 ### Organization with Delegated Administrators
@@ -91,26 +89,25 @@ metadata:
 spec:
   managementPolicies:
     - "*"
-  forProvider:
-    featureSet: ALL
-    organizationalUnits:
-      - name: Security
-      - name: Infrastructure
-      - name: Workloads
-        children:
-          - name: Prod
-          - name: Non-Prod
-      - name: Sandbox
-    delegatedAdministrators:
-      - servicePrincipal: ipam.amazonaws.com
-        accountRef:
-          name: acme-infrastructure
-      - servicePrincipal: securityhub.amazonaws.com
-        accountRef:
-          name: acme-audit
-    tags:
-      customer: acme
-      hops: "true"
+  featureSet: ALL
+  organizationalUnits:
+    - name: Security
+    - name: Infrastructure
+    - name: Workloads
+      children:
+        - name: Prod
+        - name: Non-Prod
+    - name: Sandbox
+  delegatedAdministrators:
+    - servicePrincipal: ipam.amazonaws.com
+      accountRef:
+        name: acme-infrastructure
+    - servicePrincipal: securityhub.amazonaws.com
+      accountRef:
+        name: acme-audit
+  tags:
+    customer: acme
+    hops: "true"
 ```
 
 ## Organizational Unit Structure

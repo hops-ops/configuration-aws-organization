@@ -16,16 +16,15 @@
 # Management mode
 {{ $managementMode := $spec.managementMode | default "self" }}
 
-# ForProvider settings
-{{ $forProvider := $spec.forProvider | default (dict) }}
-{{ $featureSet := $forProvider.featureSet | default "ALL" }}
-{{ $enabledPolicyTypes := $forProvider.enabledPolicyTypes | default (list "SERVICE_CONTROL_POLICY" "TAG_POLICY" "BACKUP_POLICY" "AISERVICES_OPT_OUT_POLICY") }}
-{{ $organizationalUnits := $forProvider.organizationalUnits | default (list) }}
-{{ $delegatedAdministrators := $forProvider.delegatedAdministrators | default (list) }}
+# Organization settings
+{{ $featureSet := $spec.featureSet | default "ALL" }}
+{{ $enabledPolicyTypes := $spec.enabledPolicyTypes | default (list "SERVICE_CONTROL_POLICY" "TAG_POLICY" "BACKUP_POLICY" "AISERVICES_OPT_OUT_POLICY") }}
+{{ $organizationalUnits := $spec.organizationalUnits | default (list) }}
+{{ $delegatedAdministrators := $spec.delegatedAdministrators | default (list) }}
 
 # Tags
 {{ $defaultTags := dict "hops" "true" }}
-{{ $userTags := $forProvider.tags | default (dict) }}
+{{ $userTags := $spec.tags | default (dict) }}
 {{ $tags := merge $defaultTags $userTags }}
 
 # Resource naming

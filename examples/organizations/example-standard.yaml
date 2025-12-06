@@ -6,16 +6,15 @@ metadata:
 spec:
   managementPolicies:
     - "*"
-  forProvider:
-    featureSet: ALL
-    organizationalUnits:
-      - name: Security
-      - name: Infrastructure
-      - name: Workloads
-        children:
-          - name: Prod
-          - name: Non-Prod
-      - name: Sandbox
-    tags:
-      customer: acme
-      hops: "true"
+  featureSet: ALL
+  organizationalUnits:
+    - name: Security
+    - name: Infrastructure
+    - name: Workloads
+      children:
+        - name: Prod
+        - name: Non-Prod
+    - name: Sandbox
+  tags:
+    customer: acme
+    hops: "true"

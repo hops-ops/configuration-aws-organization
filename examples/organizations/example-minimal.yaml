@@ -6,5 +6,4 @@ metadata:
 spec:
   managementPolicies:
     - "*"
-  forProvider:
-    featureSet: ALL
+  featureSet: ALL

@@ -15,9 +15,131 @@ This repository publishes the `Organization` configuration package. Use this gui
 
 This package now depends on `configuration-aws-account` and can emit `Account` composites directly from OU definitions (rendered after the OU reports Ready).
 
-Use `examples/observed-resources/step-*` to iterate rendering:
-- Step 1: Organization observed as Ready with root ID (renders top-level OUs).
-- Step 2: Organization + OUs observed as Ready (renders accounts under ready OUs).
+## Rendering & Validating Compositions
+
+### Local Rendering with `up composition render`
+
+Use `up composition render` to see what resources your composition will create without deploying to a cluster. This is essential for debugging templates and understanding the multi-step reconciliation flow.
+
+**Basic rendering:**
+```bash
+make render-example-standard
+# or directly:
+up composition render --xrd=apis/organizations/definition.yaml \
+  apis/organizations/composition.yaml \
+  examples/organizations/example-standard.yaml
+```
+
+### Simulating Reconciliation Steps with Observed Resources
+
+Crossplane compositions often create resources in stages—the render function is called repeatedly with both the desired state (your XR) and the observed state (status from previously created resources) until everything is Ready. To test this locally:
+
+**Structure:**
+```
+examples/observed-resources/
+└── example-standard/          # Named after the example XR
+    └── steps/
+        ├── 1/                 # First reconciliation loop
+        │   └── organization.yaml
+        └── 2/                 # Second reconciliation loop
+            └── organization-and-ous.yaml
+```
+
+Each step directory contains YAML manifests with realistic `status.conditions` and `status.atProvider` data that mimic what Crossplane would observe from AWS:
+
+**Step 1 (Organization ready):**
+```yaml
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: Organization
+metadata:
+  name: acme
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "organization"
+    crossplane.io/composition-resource-name: "organization"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: o-abc123
+    masterAccountId: "111111111111"
+    roots:
+      - id: r-root
+```
+
+**Step 2 (Organization + OUs ready):**
+Add the Organization from step 1 plus:
+```yaml
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: OrganizationalUnit
+metadata:
+  name: ou-Infrastructure
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-Infrastructure"
+    crossplane.io/composition-resource-name: "ou-Infrastructure"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: ou-infra123
+```
+
+**Render with observed resources:**
+```bash
+make render-example-standard-step-1
+make render-example-standard-step-2
+# or directly:
+up composition render --xrd=apis/organizations/definition.yaml \
+  apis/organizations/composition.yaml \
+  examples/organizations/example-standard.yaml \
+  --observed-resources=examples/observed-resources/example-standard/steps/1/
+```
+
+**Key requirements for observed resource manifests:**
+- Include both `gotemplating.fn.crossplane.io/composition-resource-name` and `crossplane.io/composition-resource-name` annotations
+- Match the resource names used by `{{ setResourceNameAnnotation "..." }}` in templates
+- Provide realistic `status.conditions` with Ready state
+- Include `status.atProvider` fields that templates read (IDs, ARNs, etc.)
+
+### Validating Rendered Resources
+
+After rendering, validate the output against Crossplane schemas:
+
+```bash
+make validate
+# or for specific steps:
+make validate-composition-standard-step-1
+make validate-composition-standard-step-2
+```
+
+This pipes rendered output through `crossplane beta validate` to catch schema errors before deployment.
+
+### GitHub Actions Integration
+
+Use the `unbounded-tech/workflows-crossplane` reusable workflow to validate compositions with observed resources in CI. The workflow is configured in `.github/workflows/on-pr.yaml`:
+
+```yaml
+jobs:
+  validate:
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/validate.yaml@v0.10.0
+    with:
+      examples: |
+        [
+          { "example": "examples/organizations/example-minimal.yaml" },
+          { "example": "examples/organizations/example-standard.yaml" },
+          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/example-standard/steps/1" },
+          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/example-standard/steps/2" }
+        ]
+      api_path: apis/organizations
+      error_on_missing_schemas: true
+```
+
+**Key points:**
+- Each example can be validated with or without observed resources
+- Multiple reconciliation steps can be validated by repeating the example with different `observed_resources` paths
+- The workflow renders each configuration and validates against Crossplane schemas
+- CI fails if any validation errors occur, catching issues before merge
 
 ## Rendering Guidelines
 

@@ -144,3 +144,30 @@
     {{ end }}
   {{ end }}
 {{ end }}
+
+# Build a map of observed delegated administrator states
+# Key: index, Value: {ready: bool, accountName: string}
+{{ $observedDelegatedAdmins := dict }}
+
+{{ range $index, $admin := $delegatedAdministrators }}
+  {{ $resourceName := printf "delegated-admin-%d" $index }}
+  {{ $adminObservation := get $observed $resourceName }}
+  {{ $adminReady := false }}
+
+  {{ with $adminObservation }}
+    {{ $resource := .resource | default (dict) }}
+    {{ $status := $resource.status | default (dict) }}
+    {{ $conditions := $status.conditions | default (list) }}
+    {{ range $conditions }}
+      {{ $conditionType := default "" (get . "type") }}
+      {{ $conditionStatus := default "" (get . "status") }}
+      {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
+        {{ $adminReady = true }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+  {{ $accountRef := $admin.accountRef }}
+  {{ $accountName := $accountRef.name }}
+  {{ $_ := set $observedDelegatedAdmins (toString $index) (dict "ready" $adminReady "accountName" $accountName) }}
+{{ end }}

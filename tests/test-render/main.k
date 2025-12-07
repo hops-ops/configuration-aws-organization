@@ -139,6 +139,35 @@ _items = [
                         conditions: [{type: "Ready", status: "True"}]
                         atProvider: {id: "ou-workloads-nonprod"}
                     }
+                },
+                {
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                    kind: "OrganizationalUnit"
+                    metadata: {
+                        name: "ou-Sandbox"
+                        annotations: {
+                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-Sandbox"
+                            "crossplane.io/composition-resource-name": "ou-Sandbox"
+                        }
+                    }
+                    status: {
+                        conditions: [{type: "Ready", status: "True"}]
+                        atProvider: {id: "ou-sandbox"}
+                    }
+                },
+                {
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                    kind: "DelegatedAdministrator"
+                    metadata: {
+                        name: "delegated-admin-0"
+                        annotations: {
+                            "gotemplating.fn.crossplane.io/composition-resource-name": "delegated-admin-0"
+                            "crossplane.io/composition-resource-name": "delegated-admin-0"
+                        }
+                    }
+                    status: {
+                        conditions: [{type: "Ready", status: "True"}]
+                    }
                 }
             ]
             assertResources: [
@@ -160,6 +189,162 @@ _items = [
                         parentId: "ou-workloads-prod"
                         email: "prod@acme.com"
                         providerConfigName: "default"
+                    }
+                },
+                # Assert Usage resources are created
+                {
+                    apiVersion: "protection.crossplane.io/v1beta1"
+                    kind: "Usage"
+                    metadata: {
+                        name: "of-org-acme-by-ou-ou-Security"
+                    }
+                    spec: {
+                        replayDeletion: True
+                        by: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "OrganizationalUnit"
+                            resourceRef: {name: "ou-Security"}
+                        }
+                        of: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "Organization"
+                            resourceRef: {name: "acme"}
+                        }
+                    }
+                },
+                {
+                    apiVersion: "protection.crossplane.io/v1beta1"
+                    kind: "Usage"
+                    metadata: {
+                        name: "of-org-acme-by-ou-ou-Infrastructure"
+                    }
+                    spec: {
+                        replayDeletion: True
+                        by: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "OrganizationalUnit"
+                            resourceRef: {name: "ou-Infrastructure"}
+                        }
+                        of: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "Organization"
+                            resourceRef: {name: "acme"}
+                        }
+                    }
+                },
+                {
+                    apiVersion: "protection.crossplane.io/v1beta1"
+                    kind: "Usage"
+                    metadata: {
+                        name: "of-ou-ou-Workloads-by-ou-ou-Workloads-Prod"
+                    }
+                    spec: {
+                        replayDeletion: True
+                        by: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "OrganizationalUnit"
+                            resourceRef: {name: "ou-Workloads-Prod"}
+                        }
+                        of: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "OrganizationalUnit"
+                            resourceRef: {name: "ou-Workloads"}
+                        }
+                    }
+                },
+                {
+                    apiVersion: "protection.crossplane.io/v1beta1"
+                    kind: "Usage"
+                    metadata: {
+                        name: "of-ou-ou-Workloads-by-ou-ou-Workloads-Non-Prod"
+                    }
+                    spec: {
+                        replayDeletion: True
+                        by: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "OrganizationalUnit"
+                            resourceRef: {name: "ou-Workloads-Non-Prod"}
+                        }
+                        of: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "OrganizationalUnit"
+                            resourceRef: {name: "ou-Workloads"}
+                        }
+                    }
+                },
+                {
+                    apiVersion: "protection.crossplane.io/v1beta1"
+                    kind: "Usage"
+                    metadata: {
+                        name: "of-ou-ou-Infrastructure-by-account-acme-hops"
+                    }
+                    spec: {
+                        replayDeletion: True
+                        by: {
+                            apiVersion: "aws.hops.ops.com.ai/v1alpha1"
+                            kind: "Account"
+                            resourceSelector: {
+                                matchLabels: {
+                                    "crossplane.io/claim-name": "acme-hops"
+                                    "crossplane.io/claim-namespace": "acme"
+                                }
+                            }
+                        }
+                        of: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "OrganizationalUnit"
+                            resourceRef: {name: "ou-Infrastructure"}
+                        }
+                    }
+                },
+                {
+                    apiVersion: "protection.crossplane.io/v1beta1"
+                    kind: "Usage"
+                    metadata: {
+                        name: "of-ou-ou-Workloads-Prod-by-account-acme-prod"
+                    }
+                    spec: {
+                        replayDeletion: True
+                        by: {
+                            apiVersion: "aws.hops.ops.com.ai/v1alpha1"
+                            kind: "Account"
+                            resourceSelector: {
+                                matchLabels: {
+                                    "crossplane.io/claim-name": "acme-prod"
+                                    "crossplane.io/claim-namespace": "acme"
+                                }
+                            }
+                        }
+                        of: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "OrganizationalUnit"
+                            resourceRef: {name: "ou-Workloads-Prod"}
+                        }
+                    }
+                },
+                {
+                    apiVersion: "protection.crossplane.io/v1beta1"
+                    kind: "Usage"
+                    metadata: {
+                        name: "of-account-acme-hops-by-delegated-admin-0"
+                    }
+                    spec: {
+                        replayDeletion: True
+                        by: {
+                            apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                            kind: "DelegatedAdministrator"
+                            resourceRef: {name: "delegated-admin-0"}
+                        }
+                        of: {
+                            apiVersion: "aws.hops.ops.com.ai/v1alpha1"
+                            kind: "Account"
+                            resourceSelector: {
+                                matchLabels: {
+                                    "crossplane.io/claim-name": "acme-hops"
+                                    "crossplane.io/claim-namespace": "acme"
+                                }
+                            }
+                        }
                     }
                 }
             ]

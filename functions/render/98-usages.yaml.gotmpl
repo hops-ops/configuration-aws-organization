@@ -1,0 +1,205 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+# Usage resources protect dependencies from premature deletion.
+# They ensure that:
+# - Organization is not deleted while OUs exist
+# - OUs are not deleted while child OUs or Accounts exist
+# - Accounts are not deleted while DelegatedAdministrators reference them
+
+# Protect Organization from deletion by root-level OUs
+{{ range $organizationalUnits }}
+  {{ $ouName := .name }}
+  {{ $ouPath := printf "/%s" $ouName }}
+  {{ $resourceName := printf "ou-%s" $ouName }}
+
+  {{ $ouObservation := get $observedOUs $ouPath }}
+  {{ if and $ouObservation $ouObservation.ready }}
+---
+
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-org-%s-by-ou-%s" $orgName $resourceName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-org-by-%s" $resourceName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $resourceName }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: Organization
+    resourceRef:
+      name: {{ $orgName }}
+
+  {{ end }}
+
+  # Process child OUs
+  {{ $children := .children | default (list) }}
+  {{ range $children }}
+    {{ $childName := .name }}
+    {{ $childPath := printf "%s/%s" $ouPath $childName }}
+    {{ $childResourceName := printf "ou-%s-%s" $ouName $childName }}
+    {{ $parentResourceName := $resourceName }}
+
+    {{ $childObservation := get $observedOUs $childPath }}
+    {{ if and $childObservation $childObservation.ready }}
+---
+
+# Protect parent OU from deletion by child OU
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-ou-%s-by-ou-%s" $parentResourceName $childResourceName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-%s" $parentResourceName $childResourceName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $childResourceName }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $parentResourceName }}
+
+    {{ end }}
+
+    # Process grandchild OUs
+    {{ $grandchildren := .children | default (list) }}
+    {{ range $grandchildren }}
+      {{ $grandchildName := .name }}
+      {{ $grandchildPath := printf "%s/%s" $childPath $grandchildName }}
+      {{ $grandchildResourceName := printf "ou-%s-%s-%s" $ouName $childName $grandchildName }}
+      {{ $grandchildParentResourceName := $childResourceName }}
+
+      {{ $grandchildObservation := get $observedOUs $grandchildPath }}
+      {{ if and $grandchildObservation $grandchildObservation.ready }}
+---
+
+# Protect parent OU from deletion by grandchild OU
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-ou-%s-by-ou-%s" $grandchildParentResourceName $grandchildResourceName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-%s" $grandchildParentResourceName $grandchildResourceName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $grandchildResourceName }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $grandchildParentResourceName }}
+
+      {{ end }}
+    {{ end }}
+
+    # Process accounts under child OU
+    {{ $childAccounts := .accounts | default (list) }}
+    {{ range $childAccounts }}
+      {{ $accountResourceName := .name }}
+      {{ $parentOUResourceName := $childResourceName }}
+---
+
+# Protect parent OU from deletion by Account
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-ou-%s-by-account-%s" $parentOUResourceName $accountResourceName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-account-%s" $parentOUResourceName $accountResourceName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: aws.hops.ops.com.ai/v1alpha1
+    kind: Account
+    resourceSelector:
+      matchLabels:
+        crossplane.io/claim-name: {{ $accountResourceName }}
+        crossplane.io/claim-namespace: {{ $namespace }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $parentOUResourceName }}
+
+    {{ end }}
+  {{ end }}
+
+  # Process accounts under root-level OU
+  {{ $accounts := .accounts | default (list) }}
+  {{ range $accounts }}
+    {{ $accountResourceName := .name }}
+    {{ $parentOUResourceName := $resourceName }}
+---
+
+# Protect parent OU from deletion by Account
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-ou-%s-by-account-%s" $parentOUResourceName $accountResourceName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-account-%s" $parentOUResourceName $accountResourceName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: aws.hops.ops.com.ai/v1alpha1
+    kind: Account
+    resourceSelector:
+      matchLabels:
+        crossplane.io/claim-name: {{ $accountResourceName }}
+        crossplane.io/claim-namespace: {{ $namespace }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $parentOUResourceName }}
+
+  {{ end }}
+{{ end }}
+
+# Protect Accounts from deletion by DelegatedAdministrators
+{{ range $index, $admin := $delegatedAdministrators }}
+  {{ $adminState := get $observedDelegatedAdmins (toString $index) }}
+  {{ if and $adminState $adminState.ready }}
+    {{ $accountName := $adminState.accountName }}
+    {{ $delegatedAdminResourceName := printf "delegated-admin-%d" $index }}
+---
+
+# Protect Account from deletion by DelegatedAdministrator
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-account-%s-by-delegated-admin-%d" $accountName $index }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-account-%s-by-delegated-admin-%d" $accountName $index) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: DelegatedAdministrator
+    resourceRef:
+      name: {{ $delegatedAdminResourceName }}
+  of:
+    apiVersion: aws.hops.ops.com.ai/v1alpha1
+    kind: Account
+    resourceSelector:
+      matchLabels:
+        crossplane.io/claim-name: {{ $accountName }}
+        crossplane.io/claim-namespace: {{ $namespace }}
+
+  {{ end }}
+{{ end }}

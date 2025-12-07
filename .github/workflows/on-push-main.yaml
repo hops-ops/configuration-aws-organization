@@ -3,14 +3,6 @@ on:
   push:
     branches:
     - main
-    paths:
-      - 'apis/**'
-      - 'examples/**'
-      - 'examples/observed-resources/**'
-      - 'tests/**'
-      - 'functions/**'
-      - '.github/workflows/on-push-main.yaml'
-      - 'upbound.yaml'
 
 permissions:
   packages: write

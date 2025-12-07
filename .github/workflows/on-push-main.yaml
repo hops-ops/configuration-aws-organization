@@ -9,7 +9,7 @@ on:
       - 'examples/observed-resources/**'
       - 'tests/**'
       - 'functions/**'
-      - '.github/workflows/on-pr.yaml'
+      - '.github/workflows/on-push-main.yaml'
       - 'upbound.yaml'
 
 permissions:

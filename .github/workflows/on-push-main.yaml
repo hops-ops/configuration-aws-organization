@@ -27,8 +27,8 @@ jobs:
         [
           { "example": "examples/organizations/example-minimal.yaml" },
           { "example": "examples/organizations/example-standard.yaml" },
-          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/step-1" },
-          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/step-2" }
+          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/example-standard/steps/1" },
+          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/example-standard/steps/2" }
         ]
       api_path: apis/organizations
       error_on_missing_schemas: true

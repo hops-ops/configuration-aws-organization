@@ -5,12 +5,18 @@
     ":dependencyDashboard"
   ],
   "crossplane": {
-    "fileMatch": ["\\.yaml$", "\\.yaml\\.gotmpl$"]
+    "managerFilePatterns": [
+      "/\\.yaml$/",
+      "/\\.yaml\\.gotmpl$/"
+    ]
   },
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["apis/**/configuration.yaml", "upbound.yaml"],
+      "managerFilePatterns": [
+        "apis/**/configuration.yaml",
+        "upbound.yaml"
+      ],
       "matchStrings": [
         "\\s*(configuration|function|package|provider):\\s*ghcr\\.io/hops-ops/(?<depName>.*?)\\s*version:\\s*(\"|')>=(?<currentValue>.*?)(\"|')\\s*"
       ],
@@ -19,7 +25,10 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["apis/**/configuration.yaml", "upbound.yaml"],
+      "managerFilePatterns": [
+        "apis/**/configuration.yaml",
+        "upbound.yaml"
+      ],
       "matchStrings": [
         "\\s*(configuration|function|package|provider):\\s*(?<registryUrl>.*)\\/(?<depName>.*)\\s*version:\\s*(\"|')>=(?<currentValue>.*?)(\"|')\\s*"
       ],

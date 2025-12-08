@@ -8,11 +8,18 @@ metadata:
 spec:
   # External name adopts the existing organization
   externalName: o-abc123xyz
-  # Orphan on deletion - don't delete the actual AWS org when this resource is removed
-  managementPolicies:
-    - Create
-    - Observe
-    - Update
-    - LateInitialize
+  # Default managementPolicies applies to OUs, accounts, delegated admins (includes Delete)
+  # managementPolicies: ["*"]  # default
+  # Orphan only the Organization on deletion - don't delete the actual AWS org
+  # OUs and other child resources will still be deleted
+  organization:
+    managementPolicies:
+      - Create
+      - Observe
+      - Update
+      - LateInitialize
+  organizationalUnits:
+    - name: Security
+    - name: Infrastructure
   tags:
     organization: my-org

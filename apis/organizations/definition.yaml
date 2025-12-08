@@ -46,6 +46,19 @@ spec:
                 description: |
                   AWS Organization resource settings. Passed directly to the Organization forProvider.
                   Defaults: featureSet=ALL, enabledPolicyTypes=[SERVICE_CONTROL_POLICY, TAG_POLICY, BACKUP_POLICY, AISERVICES_OPT_OUT_POLICY], awsServiceAccessPrincipals=[]
+                properties:
+                  managementPolicies:
+                    description: ManagementPolicies for the Organization resource only. If not set, uses spec.managementPolicies. Use this to orphan the Organization on deletion while still deleting OUs and other child resources.
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                        - "*"
+                        - Create
+                        - Observe
+                        - Update
+                        - Delete
+                        - LateInitialize
                 x-kubernetes-preserve-unknown-fields: true
               organizationalUnits:
                 type: array

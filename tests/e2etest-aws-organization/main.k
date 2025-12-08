@@ -14,9 +14,11 @@ _base64_creds = base64.encode(_creds)
 
 # Fixed name since AWS only allows one org per account
 # Uses external-name to adopt the existing org
-# Uses orphan management policies so org persists between test runs
 _test_org_name = "hops-e2etest-org"
 _existing_org_id = "o-3lholziq1o"
+
+# Timestamped OU names allow multiple e2e test runs to coexist
+_test_ou_name = "Test-" + _now
 
 _items = [
     metav1alpha1.E2ETest{
@@ -33,32 +35,25 @@ _items = [
                     spec: {
                         # Adopt the existing organization by ID
                         externalName: _existing_org_id
-                        # Orphan on deletion - AWS allows only one org per account
-                        # This allows the org to be reused across test runs
-                        managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
-                        # featureSet defaults to "ALL" - no need to specify
-                        # aws.providerConfig defaults to "default" - no need to specify
+                        # Orphan only the Organization on deletion - AWS allows only one org per account
+                        # OUs use default managementPolicies which includes Delete
+                        organization: {
+                            managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+                        }
                         organizationalUnits: [
                             {
-                                name: "Security"
-                            }
-                            {
-                                name: "Infrastructure"
-                            }
-                            {
-                                name: "Workloads"
+                                name: _test_ou_name
                                 children: [
                                     {
-                                        name: "Prod"
+                                        name: "Child-A"
                                     }
                                     {
-                                        name: "Non-Prod"
+                                        name: "Child-B"
                                     }
                                 ]
                             }
                         ]
                         tags: {
-                            # "hops": "true" is added automatically
                             "e2etest": "true"
                             "test-run": _now
                         }

@@ -12,12 +12,15 @@
 # Management policies
 {{ $managementPolicies := $spec.managementPolicies | default (list "*") }}
 
+# Organization-specific management policies (falls back to global if not set)
+{{ $organization := $spec.organization | default (dict) }}
+{{ $organizationManagementPolicies := $organization.managementPolicies | default $managementPolicies }}
+
 # AWS settings
 {{ $aws := $spec.aws | default (dict) }}
 {{ $awsProviderConfig := $aws.providerConfig | default "default" }}
 
-# Organization settings
-{{ $organization := $spec.organization | default (dict) }}
+# Organization settings (note: $organization already extracted above for managementPolicies)
 {{ $organizationalUnits := $spec.organizationalUnits | default (list) }}
 {{ $delegatedAdministrators := $spec.delegatedAdministrators | default (list) }}
 

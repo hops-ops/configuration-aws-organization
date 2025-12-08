@@ -13,18 +13,30 @@ metadata:
     crossplane.io/external-name: "{{ $externalName }}"
     {{ end }}
 spec:
-  managementPolicies: {{ toJson $managementPolicies }}
+  managementPolicies: {{ toJson $organizationManagementPolicies }}
   forProvider:
-    featureSet: ALL
+    {{- /* Use user-provided values or defaults */}}
+    featureSet: {{ $organization.featureSet | default "ALL" }}
+    {{- if $organization.enabledPolicyTypes }}
+    enabledPolicyTypes: {{ toJson $organization.enabledPolicyTypes }}
+    {{- else }}
     enabledPolicyTypes:
       - SERVICE_CONTROL_POLICY
       - TAG_POLICY
       - BACKUP_POLICY
       - AISERVICES_OPT_OUT_POLICY
+    {{- end }}
+    {{- if $organization.awsServiceAccessPrincipals }}
+    awsServiceAccessPrincipals: {{ toJson $organization.awsServiceAccessPrincipals }}
+    {{- else }}
     awsServiceAccessPrincipals: []
-    {{ with $organization }}
-    {{ toYaml . | nindent 4 }}
-    {{ end }}
+    {{- end }}
+    {{- /* Pass through any other user-provided organization config */}}
+    {{- range $key, $value := $organization }}
+    {{- if and (ne $key "managementPolicies") (ne $key "featureSet") (ne $key "enabledPolicyTypes") (ne $key "awsServiceAccessPrincipals") }}
+    {{ $key }}: {{ toYaml $value | nindent 6 | trim }}
+    {{- end }}
+    {{- end }}
   providerConfigRef:
     kind: ProviderConfig
     name: {{ $awsProviderConfig }}

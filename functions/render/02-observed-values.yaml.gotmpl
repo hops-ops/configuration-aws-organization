@@ -47,11 +47,12 @@
 # Key: OU path, Value: {ready: bool, id: string}
 {{ $observedOUs := dict }}
 
-# Populate observed OUs from organizationalUnits spec
+# Populate observed OUs from organizationalUnits spec (path-based)
 {{ range $organizationalUnits }}
-  {{ $ouName := .name }}
-  {{ $ouPath := printf "/%s" $ouName }}
-  {{ $resourceName := printf "ou-%s" ($ouName | lower) }}
+  {{ $ouPath := .path }}
+  # Convert path to resource name: Workloads/Prod -> ou-workloads-prod
+  {{ $pathWithDashes := $ouPath | replace "/" "-" }}
+  {{ $resourceName := printf "ou-%s" ($pathWithDashes | lower) }}
 
   {{ $ouObservation := get $observed $resourceName }}
   {{ $ouReady := false }}
@@ -77,72 +78,6 @@
   {{ end }}
 
   {{ $_ := set $observedOUs $ouPath (dict "ready" $ouReady "id" $ouId) }}
-
-  # Check for child OUs
-  {{ $children := .children | default (list) }}
-  {{ range $children }}
-    {{ $childName := .name }}
-    {{ $childPath := printf "%s/%s" $ouPath $childName }}
-    {{ $childResourceName := printf "ou-%s-%s" ($ouName | lower) ($childName | lower) }}
-
-    {{ $childObservation := get $observed $childResourceName }}
-    {{ $childReady := false }}
-    {{ $childId := "Pending" }}
-
-    {{ with $childObservation }}
-      {{ $resource := .resource | default (dict) }}
-      {{ $status := $resource.status | default (dict) }}
-      {{ $conditions := $status.conditions | default (list) }}
-      {{ range $conditions }}
-        {{ $conditionType := default "" (get . "type") }}
-        {{ $conditionStatus := default "" (get . "status") }}
-        {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
-          {{ $childReady = true }}
-        {{ end }}
-      {{ end }}
-
-      {{ $atProvider := $status.atProvider | default (dict) }}
-      {{ $candidateId := $atProvider.id | default "" }}
-      {{ if $candidateId }}
-        {{ $childId = $candidateId }}
-      {{ end }}
-    {{ end }}
-
-    {{ $_ := set $observedOUs $childPath (dict "ready" $childReady "id" $childId) }}
-
-    # Check for grandchild OUs
-    {{ $grandchildren := .children | default (list) }}
-    {{ range $grandchildren }}
-      {{ $grandchildName := .name }}
-      {{ $grandchildPath := printf "%s/%s" $childPath $grandchildName }}
-      {{ $grandchildResourceName := printf "ou-%s-%s-%s" ($ouName | lower) ($childName | lower) ($grandchildName | lower) }}
-
-      {{ $grandchildObservation := get $observed $grandchildResourceName }}
-      {{ $grandchildReady := false }}
-      {{ $grandchildId := "Pending" }}
-
-      {{ with $grandchildObservation }}
-        {{ $resource := .resource | default (dict) }}
-        {{ $status := $resource.status | default (dict) }}
-        {{ $conditions := $status.conditions | default (list) }}
-        {{ range $conditions }}
-          {{ $conditionType := default "" (get . "type") }}
-          {{ $conditionStatus := default "" (get . "status") }}
-          {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
-            {{ $grandchildReady = true }}
-          {{ end }}
-        {{ end }}
-
-        {{ $atProvider := $status.atProvider | default (dict) }}
-        {{ $candidateId := $atProvider.id | default "" }}
-        {{ if $candidateId }}
-          {{ $grandchildId = $candidateId }}
-        {{ end }}
-      {{ end }}
-
-      {{ $_ := set $observedOUs $grandchildPath (dict "ready" $grandchildReady "id" $grandchildId) }}
-    {{ end }}
-  {{ end }}
 {{ end }}
 
 # Build a map of observed delegated administrator states

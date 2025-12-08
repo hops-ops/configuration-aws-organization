@@ -19,7 +19,7 @@ spec:
       - Update
       - LateInitialize
   organizationalUnits:
-    - name: Security
-    - name: Infrastructure
+    - path: Security
+    - path: Infrastructure
   tags:
     organization: my-org

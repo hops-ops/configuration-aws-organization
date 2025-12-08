@@ -19,7 +19,6 @@ _existing_org_id = "o-3lholziq1o"
 
 # Timestamped names allow multiple e2e test runs to coexist
 _test_ou_name = "Test-" + _now
-_test_account_email = "aws+org-e2etest-" + _now + "@ops.com.ai"
 
 _items = [
     metav1alpha1.E2ETest{
@@ -43,21 +42,13 @@ _items = [
                         }
                         organizationalUnits: [
                             {
-                                name: _test_ou_name
-                                accounts: [
-                                    {
-                                        name: "e2etest-account-" + _now
-                                        email: _test_account_email
-                                    }
-                                ]
-                                children: [
-                                    {
-                                        name: "Child-A"
-                                    }
-                                    {
-                                        name: "Child-B"
-                                    }
-                                ]
+                                path: _test_ou_name
+                            }
+                            {
+                                path: _test_ou_name + "/Child-A"
+                            }
+                            {
+                                path: _test_ou_name + "/Child-B"
                             }
                         ]
                         tags: {

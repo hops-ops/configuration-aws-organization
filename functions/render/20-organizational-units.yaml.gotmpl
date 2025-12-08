@@ -3,11 +3,36 @@
 
 {{ if and $organizationReady (gt (len $organizationalUnits) 0) (ne $rootId "Pending") }}
 
-# Create root-level OUs
 {{ range $organizationalUnits }}
-{{ $ouName := .name }}
-{{ $ouPath := printf "/%s" $ouName }}
-{{ $resourceName := printf "ou-%s" ($ouName | lower) }}
+{{ $ouPath := .path }}
+
+# Convert path to resource name: Workloads/Prod -> ou-workloads-prod
+{{ $pathWithDashes := $ouPath | replace "/" "-" }}
+{{ $resourceName := printf "ou-%s" ($pathWithDashes | lower) }}
+
+# Get OU name (last segment of path)
+{{ $pathParts := splitList "/" $ouPath }}
+{{ $ouName := last $pathParts }}
+
+# Determine parent path and ID
+{{ $pathDepth := len $pathParts }}
+{{ $parentId := "" }}
+{{ $parentResourceName := "" }}
+
+{{ if eq $pathDepth 1 }}
+  {{ $parentId = $rootId }}
+{{ else }}
+  {{ $parentPath := trimSuffix (printf "/%s" $ouName) $ouPath }}
+  {{ $parentPathWithDashes := $parentPath | replace "/" "-" }}
+  {{ $parentResourceName = printf "ou-%s" ($parentPathWithDashes | lower) }}
+  {{ $parentObs := get $observedOUs $parentPath }}
+  {{ if and $parentObs $parentObs.ready }}
+    {{ $parentId = $parentObs.id }}
+  {{ end }}
+{{ end }}
+
+# Only emit OU if we have a valid parent ID
+{{ if and $parentId (ne $parentId "Pending") }}
 ---
 
 apiVersion: organizations.aws.m.upbound.io/v1beta1
@@ -20,94 +45,69 @@ spec:
   managementPolicies: {{ toJson $managementPolicies }}
   forProvider:
     name: {{ $ouName }}
-    parentId: {{ $rootId | quote }}
-    tags: {{ toJson $tags }}
-  providerConfigRef:
-    kind: ProviderConfig
-    name: {{ $awsProviderConfig }}
-
-# Create child OUs if parent is ready
-{{ $parentObservation := get $observedOUs $ouPath }}
-{{ if $parentObservation }}
-  {{ if $parentObservation.ready }}
-    {{ $parentId := $parentObservation.id }}
-    {{ if and $parentId (ne $parentId "Pending") }}
-      {{ $accounts := .accounts | default (list) }}
-      {{ range $accounts }}
-        {{ $accountName := .name }}
-        {{ $overrideSpec := .overrideSpec | default (dict) }}
-        {{ $hasOverride := gt (len $overrideSpec) 0 }}
----
-
-apiVersion: aws.hops.ops.com.ai/v1alpha1
-kind: Account
-metadata:
-  name: {{ $accountName }}
-  namespace: {{ $namespace }}
-  annotations:
-    {{ setResourceNameAnnotation (printf "account-%s" $accountName) }}
-spec:
-  {{ if $hasOverride }}
-  {{ toYaml $overrideSpec | nindent 2 }}
-  {{ else }}
-  {{ range $k, $v := . }}
-    {{ if and (ne $k "name") (ne $k "overrideSpec") }}
-      {{ if eq $k "tags" }}
-  tags:
-    {{- range $tk, $tv := (merge $tags $v) }}
-    {{ $tk }}: {{ quote $tv }}
-    {{- end }}
-      {{ else }}
-  {{ $k }}: {{ toYaml $v | nindent 4 }}
-      {{ end }}
-    {{ end }}
-  {{ end }}
-  parentId: {{ $parentId }}
-  {{ if not .managementPolicies }}
-  managementPolicies: {{ toJson $managementPolicies }}
-  {{ end }}
-  {{ if not .providerConfigName }}
-  providerConfigName: {{ $awsProviderConfig }}
-  {{ end }}
-  {{ end }}
-
-      {{ end }}
-    {{ end }}
-
-    {{ $children := .children | default (list) }}
-    {{ range $children }}
-{{ $childName := .name }}
-{{ $childPath := printf "%s/%s" $ouPath $childName }}
-{{ $childResourceName := printf "ou-%s-%s" ($ouName | lower) ($childName | lower) }}
----
-
-apiVersion: organizations.aws.m.upbound.io/v1beta1
-kind: OrganizationalUnit
-metadata:
-  name: {{ $childResourceName }}
-  annotations:
-    {{ setResourceNameAnnotation $childResourceName }}
-spec:
-  managementPolicies: {{ toJson $managementPolicies }}
-  forProvider:
-    name: {{ $childName }}
     parentId: {{ $parentId | quote }}
     tags: {{ toJson $tags }}
   providerConfigRef:
     kind: ProviderConfig
     name: {{ $awsProviderConfig }}
+{{ end }}
 
-# Create grandchild OUs if child is ready
-{{ $childObservation := get $observedOUs $childPath }}
-{{ if $childObservation }}
-  {{ if $childObservation.ready }}
-    {{ $childId := $childObservation.id }}
-    {{ if and $childId (ne $childId "Pending") }}
-      {{ $childAccounts := .accounts | default (list) }}
-      {{ range $childAccounts }}
-        {{ $accountName := .name }}
-        {{ $overrideSpec := .overrideSpec | default (dict) }}
-        {{ $hasOverride := gt (len $overrideSpec) 0 }}
+# Once OU is ready, create accounts and usage resources
+{{ $ouObs := get $observedOUs $ouPath }}
+{{ if and $ouObs $ouObs.ready }}
+{{ $ouId := $ouObs.id }}
+
+# Usage: protect Organization or parent OU from deletion by this OU
+{{ if eq $pathDepth 1 }}
+---
+
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-org-%s-by-ou-%s" $orgName $resourceName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-org-by-%s" $resourceName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $resourceName }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: Organization
+    resourceRef:
+      name: {{ $orgName }}
+{{ else }}
+---
+
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-ou-%s-by-ou-%s" $parentResourceName $resourceName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-%s" $parentResourceName $resourceName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $resourceName }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $parentResourceName }}
+{{ end }}
+
+# Create accounts under this OU
+{{ $accounts := .accounts | default (list) }}
+{{ range $accounts }}
+{{ $accountName := .name }}
+{{ $overrideSpec := .overrideSpec | default (dict) }}
+{{ $hasOverride := gt (len $overrideSpec) 0 }}
 ---
 
 apiVersion: aws.hops.ops.com.ai/v1alpha1
@@ -133,7 +133,7 @@ spec:
       {{ end }}
     {{ end }}
   {{ end }}
-  parentId: {{ $childId }}
+  parentId: {{ $ouId }}
   {{ if not .managementPolicies }}
   managementPolicies: {{ toJson $managementPolicies }}
   {{ end }}
@@ -141,37 +141,31 @@ spec:
   providerConfigName: {{ $awsProviderConfig }}
   {{ end }}
   {{ end }}
-
-      {{ end }}
-    {{ end }}
-
-    {{ $grandchildren := .children | default (list) }}
-    {{ range $grandchildren }}
-{{ $grandchildName := .name }}
-{{ $grandchildPath := printf "%s/%s" $childPath $grandchildName }}
-{{ $grandchildResourceName := printf "ou-%s-%s-%s" ($ouName | lower) ($childName | lower) ($grandchildName | lower) }}
 ---
 
-apiVersion: organizations.aws.m.upbound.io/v1beta1
-kind: OrganizationalUnit
+# Usage: protect OU from deletion by this Account
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
 metadata:
-  name: {{ $grandchildResourceName }}
+  name: {{ printf "of-ou-%s-by-account-%s" $resourceName $accountName }}
   annotations:
-    {{ setResourceNameAnnotation $grandchildResourceName }}
+    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-account-%s" $resourceName $accountName) }}
 spec:
-  managementPolicies: {{ toJson $managementPolicies }}
-  forProvider:
-    name: {{ $grandchildName }}
-    parentId: {{ $childId | quote }}
-    tags: {{ toJson $tags }}
-  providerConfigRef:
-    kind: ProviderConfig
-    name: {{ $awsProviderConfig }}
-    {{ end }}
-  {{ end }}
+  replayDeletion: true
+  by:
+    apiVersion: aws.hops.ops.com.ai/v1alpha1
+    kind: Account
+    resourceSelector:
+      matchLabels:
+        crossplane.io/claim-name: {{ $accountName }}
+        crossplane.io/claim-namespace: {{ $namespace }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $resourceName }}
 {{ end }}
-    {{ end }}
-  {{ end }}
+
 {{ end }}
 {{ end }}
 

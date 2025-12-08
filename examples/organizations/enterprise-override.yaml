@@ -15,6 +15,6 @@ spec:
     awsServiceAccessPrincipals:
       - sso.amazonaws.com
   organizationalUnits:
-    - name: Security
+    - path: Security
   tags:
     organization: acme-override

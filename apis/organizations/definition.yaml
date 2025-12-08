@@ -62,13 +62,19 @@ spec:
                 x-kubernetes-preserve-unknown-fields: true
               organizationalUnits:
                 type: array
-                description: Organizational units to create. Creates a hierarchical OU structure based on AWS best practices.
+                description: |
+                  Organizational units to create using path-based hierarchy.
+                  Paths define the OU tree structure (e.g., /Security, /Workloads/Prod).
+                  Parent OUs are created automatically based on path hierarchy.
                 items:
                   type: object
                   properties:
-                    name:
+                    path:
                       type: string
-                      description: Name of the organizational unit.
+                      description: |
+                        OU path defining hierarchy (e.g., Security, Workloads/Prod).
+                        Parent path must exist in the list for nested OUs.
+                      pattern: ^[a-zA-Z0-9-]+(/[a-zA-Z0-9-]+)*$
                     accounts:
                       type: array
                       description: |
@@ -94,14 +100,8 @@ spec:
                               Complete Account spec override. When set, skips ALL defaults (parentId, managementPolicies, tag merging).
                               Use for advanced scenarios like importing existing accounts or custom management policies.
                         x-kubernetes-preserve-unknown-fields: true
-                    children:
-                      type: array
-                      description: Nested child OUs.
-                      items:
-                        type: object
-                        x-kubernetes-preserve-unknown-fields: true
                   required:
-                    - name
+                    - path
               delegatedAdministrators:
                 type: array
                 description: Delegated administrator accounts for AWS services.

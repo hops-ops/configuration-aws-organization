@@ -19,8 +19,8 @@ spec:
   #     - sso.amazonaws.com
   #   customField: value                 # Pass-through to AWS provider
   organizationalUnits:
-    - name: Security
-    - name: Infrastructure
+    - path: Security
+    - path: Infrastructure
       accounts:
         - name: acme-hops
           email: hops@acme.com
@@ -30,14 +30,13 @@ spec:
           #   parentId: ou-custom
           #   managementPolicies: ["Observe"]
           #   customField: value
-    - name: Workloads
-      children:
-        - name: Prod
-          accounts:
-            - name: acme-prod
-              email: prod@acme.com
-        - name: Non-Prod
-    - name: Sandbox
+    - path: Workloads
+    - path: Workloads/Prod
+      accounts:
+        - name: acme-prod
+          email: prod@acme.com
+    - path: Workloads/Non-Prod
+    - path: Sandbox
   delegatedAdministrators:
     - servicePrincipal: ipam.amazonaws.com
       accountRef:

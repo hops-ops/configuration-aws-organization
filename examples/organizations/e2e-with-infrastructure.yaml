@@ -1,0 +1,50 @@
+# E2E test setup with persistent infrastructure OU/account
+# The Infrastructure OU and hops account are orphaned on delete
+# The Test OUs and accounts are created/deleted each test run
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Organization
+metadata:
+  name: hops-e2e-test
+  namespace: default
+spec:
+  # Adopt the existing organization by ID
+  externalName: o-3lholziq1o
+  # Orphan the Organization on deletion
+  organization:
+    managementPolicies:
+      - Create
+      - Observe
+      - Update
+      - LateInitialize
+  organizationalUnits:
+    # Infrastructure OU - persistent, imported via externalName
+    - path: Infrastructure
+      externalName: ou-abc123-infra
+      managementPolicies:
+        - Create
+        - Observe
+        - Update
+        - LateInitialize
+      accounts:
+        # Hops account - persistent, orphan on delete
+        - name: hops
+          email: hops@example.com
+          managementPolicies:
+            - Create
+            - Observe
+            - Update
+            - LateInitialize
+    # Test OUs - created and deleted each test run
+    - path: Test
+    - path: Test/E2E
+      accounts:
+        - name: test-account
+          email: test@example.com
+  # Delegate IPAM to the persistent hops account
+  delegatedAdministrators:
+    - servicePrincipal: ipam.amazonaws.com
+      accountRef:
+        name: hops
+  tags:
+    e2etest: "true"
+    environment: test

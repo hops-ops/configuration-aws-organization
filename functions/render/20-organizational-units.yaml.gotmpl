@@ -5,6 +5,8 @@
 
 {{ range $organizationalUnits }}
 {{ $ouPath := .path }}
+{{ $ouExternalName := .externalName | default "" }}
+{{ $ouManagementPolicies := .managementPolicies | default $managementPolicies }}
 
 # Convert path to resource name: Workloads/Prod -> ou-workloads-prod
 {{ $pathWithDashes := $ouPath | replace "/" "-" }}
@@ -41,8 +43,11 @@ metadata:
   name: {{ $resourceName }}
   annotations:
     {{ setResourceNameAnnotation $resourceName }}
+    {{ if $ouExternalName }}
+    crossplane.io/external-name: {{ $ouExternalName | quote }}
+    {{ end }}
 spec:
-  managementPolicies: {{ toJson $managementPolicies }}
+  managementPolicies: {{ toJson $ouManagementPolicies }}
   forProvider:
     name: {{ $ouName }}
     parentId: {{ $parentId | quote }}
@@ -106,6 +111,7 @@ spec:
 {{ $accounts := .accounts | default (list) }}
 {{ range $accounts }}
 {{ $accountName := .name }}
+{{ $accountManagementPolicies := .managementPolicies | default $managementPolicies }}
 {{ $overrideSpec := .overrideSpec | default (dict) }}
 {{ $hasOverride := gt (len $overrideSpec) 0 }}
 ---
@@ -121,25 +127,16 @@ spec:
   {{ if $hasOverride }}
   {{ toYaml $overrideSpec | nindent 2 }}
   {{ else }}
-  {{ range $k, $v := . }}
-    {{ if and (ne $k "name") (ne $k "overrideSpec") }}
-      {{ if eq $k "tags" }}
+  email: {{ .email | quote }}
+  parentId: {{ $ouId }}
+  managementPolicies: {{ toJson $accountManagementPolicies }}
+  providerConfigName: {{ $awsProviderConfig }}
+  {{ $accountTags := .tags | default (dict) }}
+  {{ $mergedTags := merge $tags $accountTags }}
   tags:
-    {{- range $tk, $tv := (merge $tags $v) }}
+    {{- range $tk, $tv := $mergedTags }}
     {{ $tk }}: {{ quote $tv }}
     {{- end }}
-      {{ else }}
-  {{ $k }}: {{ toYaml $v | nindent 4 }}
-      {{ end }}
-    {{ end }}
-  {{ end }}
-  parentId: {{ $ouId }}
-  {{ if not .managementPolicies }}
-  managementPolicies: {{ toJson $managementPolicies }}
-  {{ end }}
-  {{ if not .providerConfigName }}
-  providerConfigName: {{ $awsProviderConfig }}
-  {{ end }}
   {{ end }}
 ---
 

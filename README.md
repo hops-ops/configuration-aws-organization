@@ -92,3 +92,21 @@ make test
 - Provider refs include `kind: ProviderConfig` to satisfy provider schemas.
 - Accounts rely on `configuration-aws-account`; keep versions in `upbound.yaml` and `apis/organizations/configuration.yaml` aligned.
 - Organization resource naming stays simple for Renovate-friendly chart/provider tracking (no templated chart sources).
+
+
+## Integration tests
+
+If possible, we like the integration tests to cover the full lifecycle of a component - but AWS Organizations is a special beast.
+
+You can only have once instance of it, and I'm not even entirely sure if you can undo it. Deleting Member Accounts created by the organization takes 90 days.
+
+For that reason, these tests are special - they are connected to a test AWS account and some resources are not deleted.
+
+These are
+1. The organization
+2. a testing "infrastructure" OU
+3. a testing "hops" account in infrastructure OU
+
+The first time the tests run, they create these resources, and I know it's hacky, but, after that, we update the source code with `external-names` so on subsequent runs the existing resources, that we skipped deleting, are imported instead of created.
+
+This allows for multiple test runs to happen at the same time given the constraints.

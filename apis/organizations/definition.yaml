@@ -75,6 +75,25 @@ spec:
                         OU path defining hierarchy (e.g., Security, Workloads/Prod).
                         Parent path must exist in the list for nested OUs.
                       pattern: ^[a-zA-Z0-9-]+(/[a-zA-Z0-9-]+)*$
+                    externalName:
+                      type: string
+                      description: |
+                        AWS Organizational Unit ID to adopt (e.g., ou-abc123-xyz789).
+                        When set, Crossplane imports the existing OU instead of creating a new one.
+                    managementPolicies:
+                      type: array
+                      description: |
+                        ManagementPolicies for this OU. Overrides spec.managementPolicies if set.
+                        Use to orphan specific OUs on deletion while deleting others.
+                      items:
+                        type: string
+                        enum:
+                          - "*"
+                          - Create
+                          - Observe
+                          - Update
+                          - Delete
+                          - LateInitialize
                     accounts:
                       type: array
                       description: |
@@ -93,6 +112,20 @@ spec:
                           email:
                             type: string
                             description: AWS account email address. Must be unique across all AWS accounts.
+                          managementPolicies:
+                            type: array
+                            description: |
+                              ManagementPolicies for this account. Overrides spec.managementPolicies if set.
+                              Use to orphan specific accounts on deletion while deleting others.
+                            items:
+                              type: string
+                              enum:
+                                - "*"
+                                - Create
+                                - Observe
+                                - Update
+                                - Delete
+                                - LateInitialize
                           overrideSpec:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true

@@ -1,0 +1,72 @@
+# Step 3: All OUs ready, delegated admins can render
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: Organization
+metadata:
+  name: hops-e2e-test
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "organization"
+    crossplane.io/composition-resource-name: "organization"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: o-3lholziq1o
+    masterAccountId: "111111111111"
+    roots:
+      - id: r-root
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: OrganizationalUnit
+metadata:
+  name: ou-infrastructure
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-infrastructure"
+    crossplane.io/composition-resource-name: "ou-infrastructure"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: ou-abc123-infra
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: OrganizationalUnit
+metadata:
+  name: ou-test
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-test"
+    crossplane.io/composition-resource-name: "ou-test"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: ou-test-123
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: OrganizationalUnit
+metadata:
+  name: ou-test-e2e
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-test-e2e"
+    crossplane.io/composition-resource-name: "ou-test-e2e"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: ou-test-e2e-456
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: DelegatedAdministrator
+metadata:
+  name: delegated-admin-0
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "delegated-admin-0"
+    crossplane.io/composition-resource-name: "delegated-admin-0"
+status:
+  conditions:
+    - type: Ready
+      status: "True"

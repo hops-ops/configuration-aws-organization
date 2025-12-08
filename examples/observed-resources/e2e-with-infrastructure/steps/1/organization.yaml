@@ -1,0 +1,17 @@
+# Step 1: Organization is ready, OUs can start rendering
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: Organization
+metadata:
+  name: hops-e2e-test
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "organization"
+    crossplane.io/composition-resource-name: "organization"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: o-3lholziq1o
+    masterAccountId: "111111111111"
+    roots:
+      - id: r-root

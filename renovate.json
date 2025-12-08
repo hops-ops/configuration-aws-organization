@@ -16,6 +16,14 @@
       ],
       "datasourceTemplate": "github-releases",
       "packageNameTemplate": "hops-ops/{{depName}}"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["apis/**/configuration.yaml"],
+      "matchStrings": [
+        "-\\s*provider:\\s*(?<registryUrl>.*?)/(?<depName>[^\\s]+)\\s*version:\\s*\">=(?<currentValue>.*?)\"\\s*"
+      ],
+      "datasourceTemplate": "docker"
     }
   ]
 }

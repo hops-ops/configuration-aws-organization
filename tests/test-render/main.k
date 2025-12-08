@@ -69,10 +69,10 @@ _items = [
                     apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
-                        name: "ou-Security"
+                        name: "ou-security"
                         annotations: {
-                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-Security"
-                            "crossplane.io/composition-resource-name": "ou-Security"
+                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-security"
+                            "crossplane.io/composition-resource-name": "ou-security"
                         }
                     }
                     status: {
@@ -84,10 +84,10 @@ _items = [
                     apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
-                        name: "ou-Infrastructure"
+                        name: "ou-infrastructure"
                         annotations: {
-                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-Infrastructure"
-                            "crossplane.io/composition-resource-name": "ou-Infrastructure"
+                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-infrastructure"
+                            "crossplane.io/composition-resource-name": "ou-infrastructure"
                         }
                     }
                     status: {
@@ -99,10 +99,10 @@ _items = [
                     apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
-                        name: "ou-Workloads"
+                        name: "ou-workloads"
                         annotations: {
-                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-Workloads"
-                            "crossplane.io/composition-resource-name": "ou-Workloads"
+                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-workloads"
+                            "crossplane.io/composition-resource-name": "ou-workloads"
                         }
                     }
                     status: {
@@ -114,10 +114,10 @@ _items = [
                     apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
-                        name: "ou-Workloads-Prod"
+                        name: "ou-workloads-prod"
                         annotations: {
-                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-Workloads-Prod"
-                            "crossplane.io/composition-resource-name": "ou-Workloads-Prod"
+                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-workloads-prod"
+                            "crossplane.io/composition-resource-name": "ou-workloads-prod"
                         }
                     }
                     status: {
@@ -129,10 +129,10 @@ _items = [
                     apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
-                        name: "ou-Workloads-Non-Prod"
+                        name: "ou-workloads-non-prod"
                         annotations: {
-                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-Workloads-Non-Prod"
-                            "crossplane.io/composition-resource-name": "ou-Workloads-Non-Prod"
+                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-workloads-non-prod"
+                            "crossplane.io/composition-resource-name": "ou-workloads-non-prod"
                         }
                     }
                     status: {
@@ -144,10 +144,10 @@ _items = [
                     apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "OrganizationalUnit"
                     metadata: {
-                        name: "ou-Sandbox"
+                        name: "ou-sandbox"
                         annotations: {
-                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-Sandbox"
-                            "crossplane.io/composition-resource-name": "ou-Sandbox"
+                            "gotemplating.fn.crossplane.io/composition-resource-name": "ou-sandbox"
+                            "crossplane.io/composition-resource-name": "ou-sandbox"
                         }
                     }
                     status: {
@@ -196,14 +196,14 @@ _items = [
                     apiVersion: "protection.crossplane.io/v1beta1"
                     kind: "Usage"
                     metadata: {
-                        name: "of-org-acme-by-ou-ou-Security"
+                        name: "of-org-acme-by-ou-ou-security"
                     }
                     spec: {
                         replayDeletion: True
                         by: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                             kind: "OrganizationalUnit"
-                            resourceRef: {name: "ou-Security"}
+                            resourceRef: {name: "ou-security"}
                         }
                         of: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
@@ -216,14 +216,14 @@ _items = [
                     apiVersion: "protection.crossplane.io/v1beta1"
                     kind: "Usage"
                     metadata: {
-                        name: "of-org-acme-by-ou-ou-Infrastructure"
+                        name: "of-org-acme-by-ou-ou-infrastructure"
                     }
                     spec: {
                         replayDeletion: True
                         by: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                             kind: "OrganizationalUnit"
-                            resourceRef: {name: "ou-Infrastructure"}
+                            resourceRef: {name: "ou-infrastructure"}
                         }
                         of: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
@@ -236,19 +236,19 @@ _items = [
                     apiVersion: "protection.crossplane.io/v1beta1"
                     kind: "Usage"
                     metadata: {
-                        name: "of-ou-ou-Workloads-by-ou-ou-Workloads-Prod"
+                        name: "of-ou-ou-workloads-by-ou-ou-workloads-prod"
                     }
                     spec: {
                         replayDeletion: True
                         by: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                             kind: "OrganizationalUnit"
-                            resourceRef: {name: "ou-Workloads-Prod"}
+                            resourceRef: {name: "ou-workloads-prod"}
                         }
                         of: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                             kind: "OrganizationalUnit"
-                            resourceRef: {name: "ou-Workloads"}
+                            resourceRef: {name: "ou-workloads"}
                         }
                     }
                 },
@@ -256,19 +256,19 @@ _items = [
                     apiVersion: "protection.crossplane.io/v1beta1"
                     kind: "Usage"
                     metadata: {
-                        name: "of-ou-ou-Workloads-by-ou-ou-Workloads-Non-Prod"
+                        name: "of-ou-ou-workloads-by-ou-ou-workloads-non-prod"
                     }
                     spec: {
                         replayDeletion: True
                         by: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                             kind: "OrganizationalUnit"
-                            resourceRef: {name: "ou-Workloads-Non-Prod"}
+                            resourceRef: {name: "ou-workloads-non-prod"}
                         }
                         of: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                             kind: "OrganizationalUnit"
-                            resourceRef: {name: "ou-Workloads"}
+                            resourceRef: {name: "ou-workloads"}
                         }
                     }
                 },
@@ -276,7 +276,7 @@ _items = [
                     apiVersion: "protection.crossplane.io/v1beta1"
                     kind: "Usage"
                     metadata: {
-                        name: "of-ou-ou-Infrastructure-by-account-acme-hops"
+                        name: "of-ou-ou-infrastructure-by-account-acme-hops"
                     }
                     spec: {
                         replayDeletion: True
@@ -293,7 +293,7 @@ _items = [
                         of: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                             kind: "OrganizationalUnit"
-                            resourceRef: {name: "ou-Infrastructure"}
+                            resourceRef: {name: "ou-infrastructure"}
                         }
                     }
                 },
@@ -301,7 +301,7 @@ _items = [
                     apiVersion: "protection.crossplane.io/v1beta1"
                     kind: "Usage"
                     metadata: {
-                        name: "of-ou-ou-Workloads-Prod-by-account-acme-prod"
+                        name: "of-ou-ou-workloads-prod-by-account-acme-prod"
                     }
                     spec: {
                         replayDeletion: True
@@ -318,7 +318,7 @@ _items = [
                         of: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                             kind: "OrganizationalUnit"
-                            resourceRef: {name: "ou-Workloads-Prod"}
+                            resourceRef: {name: "ou-workloads-prod"}
                         }
                     }
                 },

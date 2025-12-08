@@ -44,10 +44,10 @@ status:
 apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: OrganizationalUnit
 metadata:
-  name: ou-Security
+  name: ou-security
   annotations:
-    gotemplating.fn.crossplane.io/composition-resource-name: "ou-Security"
-    crossplane.io/composition-resource-name: "ou-Security"
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-security"
+    crossplane.io/composition-resource-name: "ou-security"
 status:
   conditions:
     - type: Ready
@@ -58,10 +58,10 @@ status:
 apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: OrganizationalUnit
 metadata:
-  name: ou-Infrastructure
+  name: ou-infrastructure
   annotations:
-    gotemplating.fn.crossplane.io/composition-resource-name: "ou-Infrastructure"
-    crossplane.io/composition-resource-name: "ou-Infrastructure"
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-infrastructure"
+    crossplane.io/composition-resource-name: "ou-infrastructure"
 status:
   conditions:
     - type: Ready
@@ -72,10 +72,10 @@ status:
 apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: OrganizationalUnit
 metadata:
-  name: ou-Workloads
+  name: ou-workloads
   annotations:
-    gotemplating.fn.crossplane.io/composition-resource-name: "ou-Workloads"
-    crossplane.io/composition-resource-name: "ou-Workloads"
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-workloads"
+    crossplane.io/composition-resource-name: "ou-workloads"
 status:
   conditions:
     - type: Ready
@@ -86,10 +86,10 @@ status:
 apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: OrganizationalUnit
 metadata:
-  name: ou-Workloads-Prod
+  name: ou-workloads-prod
   annotations:
-    gotemplating.fn.crossplane.io/composition-resource-name: "ou-Workloads-Prod"
-    crossplane.io/composition-resource-name: "ou-Workloads-Prod"
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-workloads-prod"
+    crossplane.io/composition-resource-name: "ou-workloads-prod"
 status:
   conditions:
     - type: Ready
@@ -100,13 +100,27 @@ status:
 apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: OrganizationalUnit
 metadata:
-  name: ou-Workloads-Non-Prod
+  name: ou-workloads-non-prod
   annotations:
-    gotemplating.fn.crossplane.io/composition-resource-name: "ou-Workloads-Non-Prod"
-    crossplane.io/composition-resource-name: "ou-Workloads-Non-Prod"
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-workloads-non-prod"
+    crossplane.io/composition-resource-name: "ou-workloads-non-prod"
 status:
   conditions:
     - type: Ready
       status: "True"
   atProvider:
     id: "ou-workloads-nonprod"
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: OrganizationalUnit
+metadata:
+  name: ou-sandbox
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-sandbox"
+    crossplane.io/composition-resource-name: "ou-sandbox"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: "ou-sandbox"

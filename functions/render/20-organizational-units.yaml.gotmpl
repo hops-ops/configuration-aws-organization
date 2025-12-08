@@ -7,7 +7,7 @@
 {{ range $organizationalUnits }}
 {{ $ouName := .name }}
 {{ $ouPath := printf "/%s" $ouName }}
-{{ $resourceName := printf "ou-%s" $ouName }}
+{{ $resourceName := printf "ou-%s" ($ouName | lower) }}
 ---
 
 apiVersion: organizations.aws.m.upbound.io/v1beta1
@@ -78,7 +78,7 @@ spec:
     {{ range $children }}
 {{ $childName := .name }}
 {{ $childPath := printf "%s/%s" $ouPath $childName }}
-{{ $childResourceName := printf "ou-%s-%s" $ouName $childName }}
+{{ $childResourceName := printf "ou-%s-%s" ($ouName | lower) ($childName | lower) }}
 ---
 
 apiVersion: organizations.aws.m.upbound.io/v1beta1
@@ -149,7 +149,7 @@ spec:
     {{ range $grandchildren }}
 {{ $grandchildName := .name }}
 {{ $grandchildPath := printf "%s/%s" $childPath $grandchildName }}
-{{ $grandchildResourceName := printf "ou-%s-%s-%s" $ouName $childName $grandchildName }}
+{{ $grandchildResourceName := printf "ou-%s-%s-%s" ($ouName | lower) ($childName | lower) ($grandchildName | lower) }}
 ---
 
 apiVersion: organizations.aws.m.upbound.io/v1beta1

@@ -11,7 +11,7 @@
 {{ range $organizationalUnits }}
   {{ $ouName := .name }}
   {{ $ouPath := printf "/%s" $ouName }}
-  {{ $resourceName := printf "ou-%s" $ouName }}
+  {{ $resourceName := printf "ou-%s" ($ouName | lower) }}
 
   {{ $ouObservation := get $observedOUs $ouPath }}
   {{ if and $ouObservation $ouObservation.ready }}
@@ -43,7 +43,7 @@ spec:
   {{ range $children }}
     {{ $childName := .name }}
     {{ $childPath := printf "%s/%s" $ouPath $childName }}
-    {{ $childResourceName := printf "ou-%s-%s" $ouName $childName }}
+    {{ $childResourceName := printf "ou-%s-%s" ($ouName | lower) ($childName | lower) }}
     {{ $parentResourceName := $resourceName }}
 
     {{ $childObservation := get $observedOUs $childPath }}
@@ -77,7 +77,7 @@ spec:
     {{ range $grandchildren }}
       {{ $grandchildName := .name }}
       {{ $grandchildPath := printf "%s/%s" $childPath $grandchildName }}
-      {{ $grandchildResourceName := printf "ou-%s-%s-%s" $ouName $childName $grandchildName }}
+      {{ $grandchildResourceName := printf "ou-%s-%s-%s" ($ouName | lower) ($childName | lower) ($grandchildName | lower) }}
       {{ $grandchildParentResourceName := $childResourceName }}
 
       {{ $grandchildObservation := get $observedOUs $grandchildPath }}

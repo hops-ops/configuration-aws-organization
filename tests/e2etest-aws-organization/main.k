@@ -44,6 +44,13 @@ _items = [
                             {
                                 path: "Test"
                                 managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+                                accounts: [
+                                    {
+                                        name: "configuration-aws-organization"
+                                        email: "configuration-aws-organization@hops.ai"
+                                        managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+                                    }
+                                ]
                             }
                             # Timestamped child OUs - created and deleted each test run
                             {

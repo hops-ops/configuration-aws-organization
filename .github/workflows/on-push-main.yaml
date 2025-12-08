@@ -3,6 +3,14 @@ on:
   push:
     branches:
     - main
+    paths:
+      - '.github/workflows/on-push-main.yaml'
+      - '.gitops/**'
+      - 'apis/**'
+      - 'examples/**'
+      - 'functions/**'
+      - 'tests/**'
+      - 'upbound.yaml'
 
 permissions:
   packages: write

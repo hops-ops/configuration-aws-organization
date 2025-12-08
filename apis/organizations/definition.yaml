@@ -16,6 +16,12 @@ spec:
         properties:
           spec:
             properties:
+              externalName:
+                type: string
+                description: |
+                  Sets the crossplane.io/external-name annotation on the Organization resource.
+                  Use this to adopt an existing AWS Organization by specifying its ID (e.g., o-abc123xyz).
+                  When set, Crossplane will import the existing organization instead of creating a new one.
               aws:
                 properties:
                   providerConfig:

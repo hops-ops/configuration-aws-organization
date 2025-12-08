@@ -6,6 +6,9 @@
 {{ $spec := $xr.spec }}
 {{ $metadata := $xr.metadata }}
 
+# External name (for adopting existing resources)
+{{ $externalName := $spec.externalName | default "" }}
+
 # Management policies
 {{ $managementPolicies := $spec.managementPolicies | default (list "*") }}
 

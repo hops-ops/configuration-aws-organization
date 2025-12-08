@@ -13,9 +13,10 @@ _creds = file.read("secrets/aws-creds")
 _base64_creds = base64.encode(_creds)
 
 # Fixed name since AWS only allows one org per account
-# Crossplane should adopt the existing org on subsequent runs
+# Uses external-name to adopt the existing org
 # Uses orphan management policies so org persists between test runs
 _test_org_name = "hops-e2etest-org"
+_existing_org_id = "o-3lholziq1o"
 
 _items = [
     metav1alpha1.E2ETest{
@@ -30,9 +31,11 @@ _items = [
                         namespace: "default"
                     }
                     spec: {
-                        # Full deletion - organization will be deleted after test
-                        # Note: Requires no member accounts to delete successfully
-                        managementPolicies: ["*"]
+                        # Adopt the existing organization by ID
+                        externalName: _existing_org_id
+                        # Orphan on deletion - AWS allows only one org per account
+                        # This allows the org to be reused across test runs
+                        managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                         # featureSet defaults to "ALL" - no need to specify
                         # aws.providerConfig defaults to "default" - no need to specify
                         organizationalUnits: [

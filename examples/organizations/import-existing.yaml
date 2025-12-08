@@ -1,0 +1,18 @@
+# Import an existing AWS Organization
+# Use this when you already have an AWS Organization and want Crossplane to manage it
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Organization
+metadata:
+  name: my-org
+  namespace: default
+spec:
+  # External name adopts the existing organization
+  externalName: o-abc123xyz
+  # Orphan on deletion - don't delete the actual AWS org when this resource is removed
+  managementPolicies:
+    - Create
+    - Observe
+    - Update
+    - LateInitialize
+  tags:
+    organization: my-org

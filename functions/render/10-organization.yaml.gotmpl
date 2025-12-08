@@ -9,6 +9,9 @@ metadata:
   name: {{ $orgName }}
   annotations:
     {{ setResourceNameAnnotation "organization" }}
+    {{ if $externalName }}
+    crossplane.io/external-name: "{{ $externalName }}"
+    {{ end }}
 spec:
   managementPolicies: {{ toJson $managementPolicies }}
   forProvider:

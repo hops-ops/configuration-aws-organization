@@ -8,7 +8,10 @@ build:
 
 render: render-enterprise
 
-render-all: render-individual render-individual-step-1 render-enterprise render-enterprise-step-1 render-enterprise-step-2
+render-all: render-individual render-individual-step-1 render-import-existing render-enterprise render-enterprise-step-1 render-enterprise-step-2
+
+render-import-existing:
+	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/import-existing.yaml
 
 render-individual:
 	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/individual.yaml

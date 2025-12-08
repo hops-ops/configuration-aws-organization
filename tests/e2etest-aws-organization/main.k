@@ -40,9 +40,10 @@ _items = [
                             managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                         }
                         organizationalUnits: [
-                            # Test OU - persistent, orphan on delete
+                            # Test OU - persistent, imported via externalName
                             {
                                 path: "Test"
+                                externalName: "ou-hdvp-fbcb7sbw"
                                 managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                                 accounts: [
                                     {

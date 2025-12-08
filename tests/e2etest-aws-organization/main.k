@@ -12,8 +12,10 @@ _now = str(int(math.floor(datetime.ticks())))
 _creds = file.read("secrets/aws-creds")
 _base64_creds = base64.encode(_creds)
 
-# unique so multiple runs of the test don't conflict in AWS Account
-_test_org_name = "e2etest-org-" + _now
+# Fixed name since AWS only allows one org per account
+# Crossplane should adopt the existing org on subsequent runs
+# Uses orphan management policies so org persists between test runs
+_test_org_name = "hops-e2etest-org"
 
 _items = [
     metav1alpha1.E2ETest{
@@ -28,7 +30,9 @@ _items = [
                         namespace: "default"
                     }
                     spec: {
-                        managementPolicies: ["*"]
+                        # Orphan on deletion - AWS allows only one org per account
+                        # This allows the org to be reused across test runs
+                        managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                         # featureSet defaults to "ALL" - no need to specify
                         # aws.providerConfig defaults to "default" - no need to specify
                         organizationalUnits: [

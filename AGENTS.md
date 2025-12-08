@@ -215,7 +215,13 @@ spec:
   ```
 
 - Run `make e2e` (or `up test run tests/e2etest-organization --e2e`) from the repo root to execute the suite. The harness uploads the manifest in `tests/e2etest-organization/main.k`, injects the `aws-creds` Secret, and provisions a `ProviderConfig` so the test Organization composition can reach AWS.
-- The spec sets `skipDelete: false`, so resources are cleaned up automatically, but be aware that cleaning up an organization requires all member accounts to be closed first. The test should handle minimal organization structures without member accounts.
+
+### Organization-Specific E2E Considerations
+
+- **One organization per AWS account**: AWS enforces a hard limit of one organization per account. The E2E test uses orphan management policies (`["Create", "Observe", "Update", "LateInitialize"]`) to leave the org in place between test runs.
+- **Fixed resource name**: The test uses a fixed name (`e2etest-org`) rather than timestamped names. This allows Crossplane to adopt the existing organization on subsequent runs.
+- **Adoption behavior**: On first run, the test creates a new organization. On subsequent runs, Crossplane should adopt the existing organization. If adoption fails, you may need to manually set the `crossplane.io/external-name` annotation.
+- **Cleanup**: The test sets `skipDelete: false` to clean up Crossplane resources, but the actual AWS organization persists due to orphan management policies. To fully clean up, manually delete the organization through the AWS console or CLI.
 - Never commit the `aws-creds` file; it is ignored on purpose and should contain only disposable test credentials.
 
 ## Development Workflow

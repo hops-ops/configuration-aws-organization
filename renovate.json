@@ -12,9 +12,13 @@
   },
   "packageRules": [
     {
-      "matchDatasources": ["docker"],
-      "matchPackagePatterns": ["^ghcr\\.io/hops-ops/"],
-      "enabled": false
+      "matchDatasources": [
+        "docker"
+      ],
+      "enabled": false,
+      "matchPackageNames": [
+        "/^ghcr\\.io/hops-ops//"
+      ]
     }
   ],
   "customManagers": [

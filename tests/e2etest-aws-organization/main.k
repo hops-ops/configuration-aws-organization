@@ -12,12 +12,24 @@ _now = str(int(math.floor(datetime.ticks())))
 _creds = file.read("secrets/aws-creds")
 _base64_creds = base64.encode(_creds)
 
-# Fixed name since AWS only allows one org per account
-# Uses external-name to adopt the existing org
+# =============================================================================
+# Persistent infrastructure - update these if re-creating the test environment
+# =============================================================================
+
+# Organization - AWS only allows one org per account, so we adopt the existing one
 _test_org_name = "hops-e2etest-org"
 _existing_org_id = "o-3lholziq1o"
 
-# Timestamped names allow multiple e2e test runs to coexist
+# Test OU - persistent, imported via externalName
+_test_ou_external_name = "ou-hdvp-fbcb7sbw"
+
+# Test account - persistent, orphaned on delete
+_test_account_name = "configuration-aws-organization"
+_test_account_email = "configuration-aws-organization@ops.com.ai"
+
+# =============================================================================
+# Dynamic test resources - timestamped to allow concurrent test runs
+# =============================================================================
 _test_ou_name = "configuration-aws-organization-" + _now
 
 _items = [
@@ -43,12 +55,12 @@ _items = [
                             # Test OU - persistent, imported via externalName
                             {
                                 path: "Test"
-                                externalName: "ou-hdvp-fbcb7sbw"
+                                externalName: _test_ou_external_name
                                 managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                                 accounts: [
                                     {
-                                        name: "configuration-aws-organization"
-                                        email: "configuration-aws-organization@hops.ai"
+                                        name: _test_account_name
+                                        email: _test_account_email
                                         managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                                     }
                                 ]

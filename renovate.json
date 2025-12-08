@@ -10,6 +10,13 @@
       "/\\.yaml\\.gotmpl$/"
     ]
   },
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["^ghcr\\.io/hops-ops/"],
+      "enabled": false
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",

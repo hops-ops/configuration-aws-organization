@@ -19,7 +19,7 @@ _existing_org_id = "o-3lholziq1o"
 
 # Timestamped names allow multiple e2e test runs to coexist
 _test_ou_name = "Test-" + _now
-_test_account_email = "aws+hops-aws-org-e2etest-" + _now + "@ops.com.ai"
+_test_account_email = "aws+org-e2etest-" + _now + "@ops.com.ai"
 
 _items = [
     metav1alpha1.E2ETest{

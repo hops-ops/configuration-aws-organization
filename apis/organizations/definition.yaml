@@ -79,10 +79,14 @@ spec:
                         type: object
                         required:
                           - name
+                          - email
                         properties:
                           name:
                             type: string
                             description: Account name and metadata.name for the Account composite.
+                          email:
+                            type: string
+                            description: AWS account email address. Must be unique across all AWS accounts.
                           overrideSpec:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true

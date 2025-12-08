@@ -30,10 +30,11 @@ jobs:
     with:
       examples: |
         [
-          { "example": "examples/organizations/example-minimal.yaml" },
-          { "example": "examples/organizations/example-standard.yaml" },
-          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/example-standard/steps/1" },
-          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/example-standard/steps/2" }
+          { "example": "examples/organizations/individual.yaml" },
+          { "example": "examples/organizations/individual.yaml", "observed_resources": "examples/observed-resources/individual/steps/1" },
+          { "example": "examples/organizations/enterprise.yaml" },
+          { "example": "examples/organizations/enterprise.yaml", "observed_resources": "examples/observed-resources/enterprise/steps/1" },
+          { "example": "examples/organizations/enterprise.yaml", "observed_resources": "examples/observed-resources/enterprise/steps/2" }
         ]
       api_path: apis/organizations
       error_on_missing_schemas: true

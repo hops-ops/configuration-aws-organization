@@ -1,0 +1,16 @@
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: Organization
+metadata:
+  name: my-org
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "organization"
+    crossplane.io/composition-resource-name: "organization"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: o-individual123
+    masterAccountId: "999999999999"
+    roots:
+      - id: r-indiv

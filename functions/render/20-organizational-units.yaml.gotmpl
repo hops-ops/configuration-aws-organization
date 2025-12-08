@@ -35,28 +35,41 @@ spec:
       {{ $accounts := .accounts | default (list) }}
       {{ range $accounts }}
         {{ $accountName := .name }}
-        {{ $accountEmail := .email }}
-        {{ $accountProviderConfig := .providerConfigName | default $awsProviderConfig }}
-        {{ $accountTags := merge $tags (.tags | default (dict)) }}
-        {{ $accountResourceName := $accountName }}
+        {{ $overrideSpec := .overrideSpec | default (dict) }}
+        {{ $hasOverride := gt (len $overrideSpec) 0 }}
 ---
 
 apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: Account
 metadata:
-  name: {{ $accountResourceName }}
+  name: {{ $accountName }}
   namespace: {{ $namespace }}
   annotations:
-    {{ setResourceNameAnnotation (printf "account-%s" $accountResourceName) }}
+    {{ setResourceNameAnnotation (printf "account-%s" $accountName) }}
 spec:
-  email: {{ $accountEmail }}
-  parentId: {{ $parentId }}
-  providerConfigName: {{ $accountProviderConfig }}
-  managementPolicies: {{ toJson $managementPolicies }}
+  {{ if $hasOverride }}
+  {{ toYaml $overrideSpec | nindent 2 }}
+  {{ else }}
+  {{ range $k, $v := . }}
+    {{ if and (ne $k "name") (ne $k "overrideSpec") }}
+      {{ if eq $k "tags" }}
   tags:
-    {{- range $k, $v := $accountTags }}
-    {{ $k }}: {{ quote $v }}
+    {{- range $tk, $tv := (merge $tags $v) }}
+    {{ $tk }}: {{ quote $tv }}
     {{- end }}
+      {{ else }}
+  {{ $k }}: {{ toYaml $v | nindent 4 }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  parentId: {{ $parentId }}
+  {{ if not .managementPolicies }}
+  managementPolicies: {{ toJson $managementPolicies }}
+  {{ end }}
+  {{ if not .providerConfigName }}
+  providerConfigName: {{ $awsProviderConfig }}
+  {{ end }}
+  {{ end }}
 
       {{ end }}
     {{ end }}
@@ -93,28 +106,41 @@ spec:
       {{ $childAccounts := .accounts | default (list) }}
       {{ range $childAccounts }}
         {{ $accountName := .name }}
-        {{ $accountEmail := .email }}
-        {{ $accountProviderConfig := .providerConfigName | default $awsProviderConfig }}
-        {{ $accountTags := merge $tags (.tags | default (dict)) }}
-        {{ $accountResourceName := $accountName }}
+        {{ $overrideSpec := .overrideSpec | default (dict) }}
+        {{ $hasOverride := gt (len $overrideSpec) 0 }}
 ---
 
 apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: Account
 metadata:
-  name: {{ $accountResourceName }}
+  name: {{ $accountName }}
   namespace: {{ $namespace }}
   annotations:
-    {{ setResourceNameAnnotation (printf "account-%s" $accountResourceName) }}
+    {{ setResourceNameAnnotation (printf "account-%s" $accountName) }}
 spec:
-  email: {{ $accountEmail }}
-  parentId: {{ $childId }}
-  providerConfigName: {{ $accountProviderConfig }}
-  managementPolicies: {{ toJson $managementPolicies }}
+  {{ if $hasOverride }}
+  {{ toYaml $overrideSpec | nindent 2 }}
+  {{ else }}
+  {{ range $k, $v := . }}
+    {{ if and (ne $k "name") (ne $k "overrideSpec") }}
+      {{ if eq $k "tags" }}
   tags:
-    {{- range $k, $v := $accountTags }}
-    {{ $k }}: {{ quote $v }}
+    {{- range $tk, $tv := (merge $tags $v) }}
+    {{ $tk }}: {{ quote $tv }}
     {{- end }}
+      {{ else }}
+  {{ $k }}: {{ toYaml $v | nindent 4 }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  parentId: {{ $childId }}
+  {{ if not .managementPolicies }}
+  managementPolicies: {{ toJson $managementPolicies }}
+  {{ end }}
+  {{ if not .providerConfigName }}
+  providerConfigName: {{ $awsProviderConfig }}
+  {{ end }}
+  {{ end }}
 
       {{ end }}
     {{ end }}

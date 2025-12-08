@@ -23,11 +23,11 @@ Use `up composition render` to see what resources your composition will create w
 
 **Basic rendering:**
 ```bash
-make render-example-standard
+make render-enterprise
 # or directly:
 up composition render --xrd=apis/organizations/definition.yaml \
   apis/organizations/composition.yaml \
-  examples/organizations/example-standard.yaml
+  examples/organizations/enterprise.yaml
 ```
 
 ### Simulating Reconciliation Steps with Observed Resources
@@ -37,7 +37,7 @@ Crossplane compositions often create resources in stages—the render function i
 **Structure:**
 ```
 examples/observed-resources/
-└── example-standard/          # Named after the example XR
+└── enterprise/                # Named after the example XR
     └── steps/
         ├── 1/                 # First reconciliation loop
         │   └── organization.yaml
@@ -87,13 +87,13 @@ status:
 
 **Render with observed resources:**
 ```bash
-make render-example-standard-step-1
-make render-example-standard-step-2
+make render-enterprise-step-1
+make render-enterprise-step-2
 # or directly:
 up composition render --xrd=apis/organizations/definition.yaml \
   apis/organizations/composition.yaml \
-  examples/organizations/example-standard.yaml \
-  --observed-resources=examples/observed-resources/example-standard/steps/1/
+  examples/organizations/enterprise.yaml \
+  --observed-resources=examples/observed-resources/enterprise/steps/1/
 ```
 
 **Key requirements for observed resource manifests:**
@@ -109,8 +109,8 @@ After rendering, validate the output against Crossplane schemas:
 ```bash
 make validate
 # or for specific steps:
-make validate-composition-standard-step-1
-make validate-composition-standard-step-2
+make validate-composition-enterprise-step-1
+make validate-composition-enterprise-step-2
 ```
 
 This pipes rendered output through `crossplane beta validate` to catch schema errors before deployment.
@@ -126,10 +126,10 @@ jobs:
     with:
       examples: |
         [
-          { "example": "examples/organizations/example-minimal.yaml" },
-          { "example": "examples/organizations/example-standard.yaml" },
-          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/example-standard/steps/1" },
-          { "example": "examples/organizations/example-standard.yaml", "observed_resources": "examples/observed-resources/example-standard/steps/2" }
+          { "example": "examples/organizations/individual.yaml" },
+          { "example": "examples/organizations/enterprise.yaml" },
+          { "example": "examples/organizations/enterprise.yaml", "observed_resources": "examples/observed-resources/enterprise/steps/1" },
+          { "example": "examples/organizations/enterprise.yaml", "observed_resources": "examples/observed-resources/enterprise/steps/2" }
         ]
       api_path: apis/organizations
       error_on_missing_schemas: true
@@ -149,6 +149,42 @@ jobs:
 - Resource templates must reference only previously declared variables. If you add new variables, hoist them into the appropriate values file.
 - Default tags to `{"hops": "true"}` and merge caller-provided tags afterwards.
 - Favor readability over micro-templating—duplicated strings for clarity are acceptable.
+
+### YAML Override Pattern
+
+Use inline defaults that get overridden by user values via YAML's last-wins behavior. This is simpler and more readable than creating default dicts and merging them.
+
+**Example from `10-organization.yaml.gotmpl`:**
+```yaml
+spec:
+  managementPolicies: {{ toJson $managementPolicies }}
+  forProvider:
+    featureSet: ALL
+    enabledPolicyTypes:
+      - SERVICE_CONTROL_POLICY
+      - TAG_POLICY
+      - BACKUP_POLICY
+      - AISERVICES_OPT_OUT_POLICY
+    awsServiceAccessPrincipals: []
+    {{ with $organization }}
+    {{ toYaml . | nindent 4 }}
+    {{ end }}
+  providerConfigRef:
+    kind: ProviderConfig
+    name: {{ $awsProviderConfig }}
+```
+
+**How it works:**
+1. Define defaults inline first (`featureSet: ALL`, etc.)
+2. User values from `$organization` are rendered after defaults
+3. YAML's last-wins rule means user values override defaults
+4. No need for dict creation, merging, or complex logic
+
+**Benefits:**
+- More readable - defaults are visible in the template
+- Simpler - no dict manipulation needed
+- Same behavior - overrides work naturally via YAML semantics
+- Easier to maintain - change defaults directly in the template
 
 ## Organizational Unit Creation
 
@@ -184,13 +220,19 @@ jobs:
 
 ## Development Workflow
 
-- `make render` – render the minimal example.
+- `make render` – render the enterprise example.
 - `make render-all` – render all examples.
 - `make validate` – run schema validation against the XRD and examples.
 - `make test` – execute the regression suite.
 - `make e2e` – execute e2e tests.
 
 Document behavioral changes in `README.md` and refresh `examples/` whenever the schema shifts.
+
+## Naming Conventions
+
+Examples in the `examples/organizations/` directory do not use the "example-" prefix since the directory context already indicates they are examples. Use descriptive names that indicate the use case:
+- `individual.yaml` - for solo founders and small teams
+- `enterprise.yaml` - for production operations with multiple accounts
 
 ## Crossplane Configuration Best Practices
 

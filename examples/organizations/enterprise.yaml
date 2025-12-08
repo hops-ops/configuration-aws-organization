@@ -1,0 +1,47 @@
+# Enterprise setup: production-grade OU hierarchy
+# Includes delegation, multiple accounts, and AWS best-practice structure
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Organization
+metadata:
+  name: acme
+  namespace: acme
+spec:
+  managementPolicies:
+    - "*"
+  # Optional: customize organization settings
+  # Defaults: featureSet=ALL, enabledPolicyTypes=[all 4], awsServiceAccessPrincipals=[]
+  # Any fields set here override the defaults (last-wins in YAML)
+  # organization:
+  #   featureSet: CONSOLIDATED_BILLING  # Override default ALL
+  #   enabledPolicyTypes:                # Override default policy types
+  #     - SERVICE_CONTROL_POLICY
+  #   awsServiceAccessPrincipals:        # Override empty list
+  #     - sso.amazonaws.com
+  #   customField: value                 # Pass-through to AWS provider
+  organizationalUnits:
+    - name: Security
+    - name: Infrastructure
+      accounts:
+        - name: acme-hops
+          email: hops@acme.com
+          # Optional: use overrideSpec to bypass defaults and provide complete Account spec
+          # overrideSpec:
+          #   email: hops@acme.com
+          #   parentId: ou-custom
+          #   managementPolicies: ["Observe"]
+          #   customField: value
+    - name: Workloads
+      children:
+        - name: Prod
+          accounts:
+            - name: acme-prod
+              email: prod@acme.com
+        - name: Non-Prod
+    - name: Sandbox
+  delegatedAdministrators:
+    - servicePrincipal: ipam.amazonaws.com
+      accountRef:
+        name: acme-hops
+  tags:
+    organization: acme
+    # hops: "true" is added automatically by the composition

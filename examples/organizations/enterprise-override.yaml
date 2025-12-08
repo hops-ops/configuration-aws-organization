@@ -1,0 +1,20 @@
+# Enterprise example with organization overrides
+# Demonstrates overriding default organization settings
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Organization
+metadata:
+  name: acme-override
+  namespace: acme
+spec:
+  managementPolicies:
+    - "*"
+  organization:
+    featureSet: CONSOLIDATED_BILLING
+    enabledPolicyTypes:
+      - SERVICE_CONTROL_POLICY
+    awsServiceAccessPrincipals:
+      - sso.amazonaws.com
+  organizationalUnits:
+    - name: Security
+  tags:
+    organization: acme-override

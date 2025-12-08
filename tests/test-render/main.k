@@ -3,14 +3,14 @@ import models.k8s.apimachinery.pkg.apis.meta.v1 as metav1
 
 _items = [
     metav1alpha1.CompositionTest{
-        metadata.name: "test-organization-render-minimal"
+        metadata.name: "test-organization-render-individual"
         spec= {
             assertResources: [
                 {
                     apiVersion: "organizations.aws.m.upbound.io/v1beta1"
                     kind: "Organization"
                     metadata: {
-                        name: "acme"
+                        name: "my-org"
                     }
                     spec: {
                         managementPolicies: ["*"]
@@ -31,17 +31,17 @@ _items = [
                 }
             ]
             compositionPath: "apis/organizations/composition.yaml"
-            xrPath: "examples/organizations/example-minimal.yaml"
+            xrPath: "examples/organizations/individual.yaml"
             xrdPath: "apis/organizations/definition.yaml"
             timeoutSeconds: 120
             validate: True
         }
     },
     metav1alpha1.CompositionTest{
-        metadata.name: "test-organization-render-with-accounts"
+        metadata.name: "test-organization-render-enterprise"
         spec= {
             compositionPath: "apis/organizations/composition.yaml"
-            xrPath: "examples/organizations/example-standard.yaml"
+            xrPath: "examples/organizations/enterprise.yaml"
             xrdPath: "apis/organizations/definition.yaml"
             timeoutSeconds: 120
             validate: True
@@ -351,7 +351,7 @@ _items = [
         }
     },
     metav1alpha1.CompositionTest{
-        metadata.name: "test-organization-render-standard"
+        metadata.name: "test-organization-render-enterprise-defaults"
         spec= {
             assertResources: [
                 {
@@ -372,7 +372,37 @@ _items = [
                 }
             ]
             compositionPath: "apis/organizations/composition.yaml"
-            xrPath: "examples/organizations/example-standard.yaml"
+            xrPath: "examples/organizations/enterprise.yaml"
+            xrdPath: "apis/organizations/definition.yaml"
+            timeoutSeconds: 120
+            validate: True
+        }
+    },
+    metav1alpha1.CompositionTest{
+        metadata.name: "test-organization-render-enterprise-override"
+        spec= {
+            assertResources: [
+                {
+                    apiVersion: "organizations.aws.m.upbound.io/v1beta1"
+                    kind: "Organization"
+                    metadata: {
+                        name: "acme-override"
+                    }
+                    spec: {
+                        managementPolicies: ["*"]
+                        providerConfigRef: {
+                            name: "default"
+                        }
+                        forProvider: {
+                            featureSet: "CONSOLIDATED_BILLING"
+                            enabledPolicyTypes: ["SERVICE_CONTROL_POLICY"]
+                            awsServiceAccessPrincipals: ["sso.amazonaws.com"]
+                        }
+                    }
+                }
+            ]
+            compositionPath: "apis/organizations/composition.yaml"
+            xrPath: "examples/organizations/enterprise-override.yaml"
             xrdPath: "apis/organizations/definition.yaml"
             timeoutSeconds: 120
             validate: True

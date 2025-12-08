@@ -12,11 +12,16 @@ metadata:
 spec:
   managementPolicies: {{ toJson $managementPolicies }}
   forProvider:
+    featureSet: ALL
+    enabledPolicyTypes:
+      - SERVICE_CONTROL_POLICY
+      - TAG_POLICY
+      - BACKUP_POLICY
+      - AISERVICES_OPT_OUT_POLICY
     awsServiceAccessPrincipals: []
-    {{ if eq $featureSet "ALL" }}
-    enabledPolicyTypes: {{ toJson $enabledPolicyTypes }}
+    {{ with $organization }}
+    {{ toYaml . | nindent 4 }}
     {{ end }}
-    featureSet: {{ $featureSet }}
   providerConfigRef:
     kind: ProviderConfig
     name: {{ $awsProviderConfig }}

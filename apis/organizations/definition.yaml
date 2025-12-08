@@ -16,13 +16,6 @@ spec:
         properties:
           spec:
             properties:
-              managementMode:
-                type: string
-                description: Management mode for the organization. 'self' means manage in the same account, 'managed' means manage from a different account.
-                enum:
-                  - self
-                  - managed
-                default: self
               aws:
                 properties:
                   providerConfig:
@@ -42,28 +35,12 @@ spec:
                     - Delete
                     - LateInitialize
                 default: ["*"]
-              featureSet:
-                type: string
-                description: Feature set for the organization. ALL enables all features including SCPs, CONSOLIDATED_BILLING only enables billing features.
-                enum:
-                  - ALL
-                  - CONSOLIDATED_BILLING
-                default: ALL
-              enabledPolicyTypes:
-                type: array
-                description: Policy types to enable for the organization. Only applies when featureSet is ALL.
-                items:
-                  type: string
-                  enum:
-                    - SERVICE_CONTROL_POLICY
-                    - TAG_POLICY
-                    - BACKUP_POLICY
-                    - AISERVICES_OPT_OUT_POLICY
-                default:
-                  - SERVICE_CONTROL_POLICY
-                  - TAG_POLICY
-                  - BACKUP_POLICY
-                  - AISERVICES_OPT_OUT_POLICY
+              organization:
+                type: object
+                description: |
+                  AWS Organization resource settings. Passed directly to the Organization forProvider.
+                  Defaults: featureSet=ALL, enabledPolicyTypes=[SERVICE_CONTROL_POLICY, TAG_POLICY, BACKUP_POLICY, AISERVICES_OPT_OUT_POLICY], awsServiceAccessPrincipals=[]
+                x-kubernetes-preserve-unknown-fields: true
               organizationalUnits:
                 type: array
                 description: Organizational units to create. Creates a hierarchical OU structure based on AWS best practices.
@@ -75,26 +52,25 @@ spec:
                       description: Name of the organizational unit.
                     accounts:
                       type: array
-                      description: Accounts to create under this organizational unit.
+                      description: |
+                        Accounts to create under this organizational unit. Fields are passed to Account composite spec.
+                        Defaults applied: parentId (from parent OU), managementPolicies (from org), tags (merged with org).
+                        Use 'overrideSpec' to skip all defaults and provide complete Account spec.
                       items:
                         type: object
+                        required:
+                          - name
                         properties:
                           name:
                             type: string
                             description: Account name and metadata.name for the Account composite.
-                          email:
-                            type: string
-                            description: Unique AWS account email address.
-                          providerConfigName:
-                            type: string
-                            description: Management account ProviderConfig to use for this account. Defaults to the Organization AWS providerConfig.
-                          tags:
+                          overrideSpec:
                             type: object
-                            description: Tags to merge with the Organization tags for this account.
                             x-kubernetes-preserve-unknown-fields: true
-                        required:
-                          - name
-                          - email
+                            description: |
+                              Complete Account spec override. When set, skips ALL defaults (parentId, managementPolicies, tag merging).
+                              Use for advanced scenarios like importing existing accounts or custom management policies.
+                        x-kubernetes-preserve-unknown-fields: true
                     children:
                       type: array
                       description: Nested child OUs.

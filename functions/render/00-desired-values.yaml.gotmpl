@@ -13,12 +13,8 @@
 {{ $aws := $spec.aws | default (dict) }}
 {{ $awsProviderConfig := $aws.providerConfig | default "default" }}
 
-# Management mode
-{{ $managementMode := $spec.managementMode | default "self" }}
-
 # Organization settings
-{{ $featureSet := $spec.featureSet | default "ALL" }}
-{{ $enabledPolicyTypes := $spec.enabledPolicyTypes | default (list "SERVICE_CONTROL_POLICY" "TAG_POLICY" "BACKUP_POLICY" "AISERVICES_OPT_OUT_POLICY") }}
+{{ $organization := $spec.organization | default (dict) }}
 {{ $organizationalUnits := $spec.organizationalUnits | default (list) }}
 {{ $delegatedAdministrators := $spec.delegatedAdministrators | default (list) }}
 

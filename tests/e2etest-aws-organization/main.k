@@ -29,7 +29,8 @@ _items = [
                     }
                     spec: {
                         managementPolicies: ["*"]
-                        featureSet: "ALL"
+                        # featureSet defaults to "ALL" - no need to specify
+                        # aws.providerConfig defaults to "default" - no need to specify
                         organizationalUnits: [
                             {
                                 name: "Security"
@@ -49,11 +50,8 @@ _items = [
                                 ]
                             }
                         ]
-                        aws: {
-                            providerConfig: "default"
-                        }
                         tags: {
-                            "hops": "true"
+                            # "hops": "true" is added automatically
                             "e2etest": "true"
                             "test-run": _now
                         }

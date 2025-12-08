@@ -19,9 +19,9 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["apis/**/configuration.yaml"],
+      "managerFilePatterns": ["apis/**/configuration.yaml", "upbound.yaml"],
       "matchStrings": [
-        "-\\s*(provider|function):\\s*(?<registryUrl>[^/]+)/(?<depName>[^\\s]+)\\s*version:\\s*\">=(?<currentValue>.*?)\"\\s*"
+        "-\\s*(provider|function|package):\\s*(?<registryUrl>[^/]+)/(?<depName>[^\\s]+)\\s*version:\\s*\">=(?<currentValue>.*?)\"\\s*"
       ],
       "datasourceTemplate": "docker",
       "registryUrlTemplate": "https://{{registryUrl}}"

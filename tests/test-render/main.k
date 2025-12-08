@@ -283,12 +283,7 @@ _items = [
                         by: {
                             apiVersion: "aws.hops.ops.com.ai/v1alpha1"
                             kind: "Account"
-                            resourceSelector: {
-                                matchLabels: {
-                                    "crossplane.io/claim-name": "acme-hops"
-                                    "crossplane.io/claim-namespace": "acme"
-                                }
-                            }
+                            resourceRef: {name: "acme-hops"}
                         }
                         of: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
@@ -308,12 +303,7 @@ _items = [
                         by: {
                             apiVersion: "aws.hops.ops.com.ai/v1alpha1"
                             kind: "Account"
-                            resourceSelector: {
-                                matchLabels: {
-                                    "crossplane.io/claim-name": "acme-prod"
-                                    "crossplane.io/claim-namespace": "acme"
-                                }
-                            }
+                            resourceRef: {name: "acme-prod"}
                         }
                         of: {
                             apiVersion: "organizations.aws.m.upbound.io/v1beta1"
@@ -338,12 +328,7 @@ _items = [
                         of: {
                             apiVersion: "aws.hops.ops.com.ai/v1alpha1"
                             kind: "Account"
-                            resourceSelector: {
-                                matchLabels: {
-                                    "crossplane.io/claim-name": "acme-hops"
-                                    "crossplane.io/claim-namespace": "acme"
-                                }
-                            }
+                            resourceRef: {name: "acme-hops"}
                         }
                     }
                 }
@@ -643,12 +628,7 @@ _items = [
                         of: {
                             apiVersion: "aws.hops.ops.com.ai/v1alpha1"
                             kind: "Account"
-                            resourceSelector: {
-                                matchLabels: {
-                                    "crossplane.io/claim-name": "hops"
-                                    "crossplane.io/claim-namespace": "default"
-                                }
-                            }
+                            resourceRef: {name: "hops"}
                         }
                     }
                 }

@@ -122,7 +122,7 @@ Use the `unbounded-tech/workflows-crossplane` reusable workflow to validate comp
 ```yaml
 jobs:
   validate:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/validate.yaml@v0.10.0
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/validate.yaml@v1.0.0
     with:
       examples: |
         [

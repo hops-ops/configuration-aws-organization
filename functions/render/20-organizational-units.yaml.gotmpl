@@ -152,10 +152,8 @@ spec:
   by:
     apiVersion: aws.hops.ops.com.ai/v1alpha1
     kind: Account
-    resourceSelector:
-      matchLabels:
-        crossplane.io/claim-name: {{ $accountName }}
-        crossplane.io/claim-namespace: {{ $namespace }}
+    resourceRef:
+      name: {{ $accountName }}
   of:
     apiVersion: organizations.aws.m.upbound.io/v1beta1
     kind: OrganizationalUnit

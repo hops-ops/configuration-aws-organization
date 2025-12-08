@@ -21,7 +21,7 @@
       "customType": "regex",
       "managerFilePatterns": ["apis/**/configuration.yaml", "upbound.yaml"],
       "matchStrings": [
-        "-\\s*(configuration|function|package|provider):\\s*(?<registryUrl>[^/]+)/(?<depName>[^\\s]+)\\s*version:\\s*(\"|')>=(?<currentValue>.*?)(\"|')\\s*"
+        "(configuration|function|package|provider):\\s*(?<registryUrl>.*)/(?<depName>.*)\\s*version:\\s*(\"|')>=(?<currentValue>.*?)(\"|')$"
       ],
       "datasourceTemplate": "docker",
       "registryUrlTemplate": "https://{{registryUrl}}"

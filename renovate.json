@@ -10,9 +10,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["apis/**/configuration.yaml"],
+      "managerFilePatterns": ["apis/**/configuration.yaml", "upbound.yaml"],
       "matchStrings": [
-        "-\\s*configuration:\\s*ghcr\\.io/hops-ops/(?<depName>.*?)\\s*version:\\s*(\"|')>=(?<currentValue>.*?)(\"|')\\s*"
+        "\\s*(configuration|function|package|provider):\\s*ghcr\\.io/hops-ops/(?<depName>.*?)\\s*version:\\s*(\"|')>=(?<currentValue>.*?)(\"|')\\s*"
       ],
       "datasourceTemplate": "github-releases",
       "packageNameTemplate": "hops-ops/{{depName}}"

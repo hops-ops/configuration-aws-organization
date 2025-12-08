@@ -18,7 +18,7 @@ _test_org_name = "hops-e2etest-org"
 _existing_org_id = "o-3lholziq1o"
 
 # Timestamped names allow multiple e2e test runs to coexist
-_test_ou_name = "Test-" + _now
+_test_ou_name = "configuration-aws-organization-" + _now
 
 _items = [
     metav1alpha1.E2ETest{
@@ -36,19 +36,24 @@ _items = [
                         # Adopt the existing organization by ID
                         externalName: _existing_org_id
                         # Orphan only the Organization on deletion - AWS allows only one org per account
-                        # OUs use default managementPolicies which includes Delete
                         organization: {
                             managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                         }
                         organizationalUnits: [
+                            # Test OU - persistent, orphan on delete
                             {
-                                path: _test_ou_name
+                                path: "Test"
+                                managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+                            }
+                            # Timestamped child OUs - created and deleted each test run
+                            {
+                                path: "Test/" + _test_ou_name
                             }
                             {
-                                path: _test_ou_name + "/Child-A"
+                                path: "Test/" + _test_ou_name + "/Child-A"
                             }
                             {
-                                path: _test_ou_name + "/Child-B"
+                                path: "Test/" + _test_ou_name + "/Child-B"
                             }
                         ]
                         tags: {

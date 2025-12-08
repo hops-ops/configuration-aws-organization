@@ -30,9 +30,9 @@ _items = [
                         namespace: "default"
                     }
                     spec: {
-                        # Orphan on deletion - AWS allows only one org per account
-                        # This allows the org to be reused across test runs
-                        managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+                        # Full deletion - organization will be deleted after test
+                        # Note: Requires no member accounts to delete successfully
+                        managementPolicies: ["*"]
                         # featureSet defaults to "ALL" - no need to specify
                         # aws.providerConfig defaults to "default" - no need to specify
                         organizationalUnits: [

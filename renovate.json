@@ -6,5 +6,16 @@
   ],
   "crossplane": {
     "fileMatch": ["\\.yaml$", "\\.yaml\\.gotmpl$"]
-  }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["apis/**/configuration.yaml"],
+      "matchStrings": [
+        "-\\s*configuration:\\s*ghcr\\.io/hops-ops/(?<depName>.*?)\\s*version:\\s*\">=(?<currentValue>.*?)\"\\s*"
+      ],
+      "datasourceTemplate": "github-releases",
+      "packageNameTemplate": "hops-ops/{{depName}}"
+    }
+  ]
 }

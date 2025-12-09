@@ -111,6 +111,7 @@ spec:
 {{ $accounts := .accounts | default (list) }}
 {{ range $accounts }}
 {{ $accountName := .name }}
+{{ $accountExternalName := .externalName | default "" }}
 {{ $accountManagementPolicies := .managementPolicies | default $managementPolicies }}
 {{ $overrideSpec := .overrideSpec | default (dict) }}
 {{ $hasOverride := gt (len $overrideSpec) 0 }}
@@ -128,6 +129,9 @@ spec:
   {{ toYaml $overrideSpec | nindent 2 }}
   {{ else }}
   email: {{ .email | quote }}
+  {{ if $accountExternalName }}
+  externalName: {{ $accountExternalName | quote }}
+  {{ end }}
   parentId: {{ $ouId }}
   managementPolicies: {{ toJson $accountManagementPolicies }}
   providerConfigName: {{ $awsProviderConfig }}

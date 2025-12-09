@@ -26,6 +26,7 @@ _test_ou_external_name = "ou-hdvp-fbcb7sbw"
 # Test account - persistent, orphaned on delete
 _test_account_name = "configuration-aws-organization"
 _test_account_email = "configuration-aws-organization@ops.com.ai"
+_test_account_external_name = "544051101726"
 
 # =============================================================================
 # Dynamic test resources - timestamped to allow concurrent test runs
@@ -61,6 +62,7 @@ _items = [
                                     {
                                         name: _test_account_name
                                         email: _test_account_email
+                                        externalName: _test_account_external_name
                                         managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                                     }
                                 ]

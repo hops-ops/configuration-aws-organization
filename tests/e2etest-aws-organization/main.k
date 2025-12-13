@@ -51,6 +51,11 @@ _items = [
                         # Orphan only the Organization on deletion - AWS allows only one org per account
                         organization: {
                             managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+                            # Enable IAM service access for centralized root access management
+                            awsServiceAccessPrincipals: [
+                                "iam.amazonaws.com", 
+                                "sso.amazonaws.com"
+                            ]
                         }
                         organizationalUnits: [
                             # Test OU - persistent, imported via externalName

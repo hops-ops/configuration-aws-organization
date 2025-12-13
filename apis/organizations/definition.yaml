@@ -59,6 +59,13 @@ spec:
                         - Update
                         - Delete
                         - LateInitialize
+                  awsServiceAccessPrincipals:
+                    description: |
+                      AWS service principals to enable trusted access for (e.g., iam.amazonaws.com, sso.amazonaws.com).
+                      Enables centralized management capabilities for these services across the organization.
+                    type: array
+                    items:
+                      type: string
                 x-kubernetes-preserve-unknown-fields: true
               organizationalUnits:
                 type: array

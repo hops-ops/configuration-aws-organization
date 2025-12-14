@@ -54,7 +54,8 @@ _items = [
                             # Enable IAM service access for centralized root access management
                             awsServiceAccessPrincipals: [
                                 "iam.amazonaws.com", 
-                                "sso.amazonaws.com"
+                                "sso.amazonaws.com",
+                                "account.amazonaws.com"
                             ]
                         }
                         organizationalUnits: [

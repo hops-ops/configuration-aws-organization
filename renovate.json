@@ -22,7 +22,7 @@
       ],
       "datasourceTemplate": "github-releases",
       "packageNameTemplate": "hops-ops/{{depName}}",
-      "depNameTemplate": "hops-ops/{{depName}}"  // Nicer PR titles
+      "depNameTemplate": "hops-ops/{{depName}}"
     },
     {
       "customType": "regex",

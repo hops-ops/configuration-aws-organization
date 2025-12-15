@@ -10,13 +10,6 @@
       "/\\.yaml\\.gotmpl$/"
     ]
   },
-  "packageRules": [
-    {
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["/^hops-ops\\//"],
-      "enabled": false
-    }
-  ],
   "customManagers": [
     {
       "customType": "regex",
@@ -28,7 +21,8 @@
         "\\s*(configuration|function|package|provider):\\s*ghcr\\.io/hops-ops/(?<depName>.*?)\\s*version:\\s*(\"|')>=(?<currentValue>.*?)(\"|')\\s*"
       ],
       "datasourceTemplate": "github-releases",
-      "packageNameTemplate": "hops-ops/{{depName}}"
+      "packageNameTemplate": "hops-ops/{{depName}}",
+      "depNameTemplate": "hops-ops/{{depName}}"  // Nicer PR titles
     },
     {
       "customType": "regex",
@@ -37,7 +31,7 @@
         "upbound.yaml"
       ],
       "matchStrings": [
-        "\\s*(configuration|function|package|provider):\\s*(?<registryUrl>.*)\\/(?<depName>.*)\\s*version:\\s*(\"|')>=(?<currentValue>.*?)(\"|')\\s*"
+        "\\s*(configuration|function|package|provider):\\s*(?<registryUrl>(?!.*hops-ops)[^/]+\\/[^\\/]+)\\/(?<depName>.*?)\\s*version:\\s*(\"|')>=(?<currentValue>.*?)(\"|')\\s*"
       ],
       "datasourceTemplate": "docker",
       "registryUrlTemplate": "https://{{registryUrl}}"

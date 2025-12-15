@@ -106,3 +106,45 @@
   {{ $accountName := $accountRef.name }}
   {{ $_ := set $observedDelegatedAdmins (toString $index) (dict "ready" $adminReady "accountName" $accountName) }}
 {{ end }}
+
+# Build a map of observed Account states
+# Key: account name, Value: {ready: bool, id: string, adminRoleArn: string}
+{{ $observedAccounts := dict }}
+
+# Collect all accounts from all OUs
+{{ range $ou := $organizationalUnits }}
+  {{ $ouAccounts := $ou.accounts | default (list) }}
+  {{ range $account := $ouAccounts }}
+    {{ $accountName := $account.name }}
+    {{ $resourceName := printf "account-%s" $accountName }}
+    {{ $accountObservation := get $observed $resourceName }}
+    {{ $accountReady := false }}
+    {{ $accountId := "Pending" }}
+    {{ $adminRoleArn := "Pending" }}
+
+    {{ with $accountObservation }}
+      {{ $resource := .resource | default (dict) }}
+      {{ $status := $resource.status | default (dict) }}
+      {{ $conditions := $status.conditions | default (list) }}
+      {{ range $conditions }}
+        {{ $conditionType := default "" (get . "type") }}
+        {{ $conditionStatus := default "" (get . "status") }}
+        {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
+          {{ $accountReady = true }}
+        {{ end }}
+      {{ end }}
+
+      # Get account ID from Account XRD status
+      {{ $candidateId := $status.accountId | default "" }}
+      {{ if $candidateId }}
+        {{ $accountId = $candidateId }}
+      {{ end }}
+      {{ $candidateArn := $status.adminRoleArn | default "" }}
+      {{ if $candidateArn }}
+        {{ $adminRoleArn = $candidateArn }}
+      {{ end }}
+    {{ end }}
+
+    {{ $_ := set $observedAccounts $accountName (dict "ready" $accountReady "id" $accountId "adminRoleArn" $adminRoleArn) }}
+  {{ end }}
+{{ end }}

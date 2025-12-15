@@ -15,4 +15,13 @@ status:
     {{ $path }}: {{ $state.id | quote }}
     {{ end }}
   {{ end }}
+  {{ if gt (len $observedAccounts) 0 }}
+  accounts:
+    {{ range $name, $state := $observedAccounts }}
+    - name: {{ $name | quote }}
+      id: {{ $state.id | quote }}
+      ready: {{ $state.ready }}
+      adminRoleArn: {{ $state.adminRoleArn | quote }}
+    {{ end }}
+  {{ end }}
   ready: {{ $organizationReady }}

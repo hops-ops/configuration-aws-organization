@@ -189,6 +189,24 @@ spec:
                 type: object
                 description: Map of OU paths to OU IDs.
                 x-kubernetes-preserve-unknown-fields: true
+              accounts:
+                type: array
+                description: Accounts with their resolved IDs and status.
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Logical account name.
+                    id:
+                      type: string
+                      description: AWS account ID.
+                    ready:
+                      type: boolean
+                      description: Whether the account is ready.
+                    adminRoleArn:
+                      type: string
+                      description: ARN of the OrganizationAccountAccessRole in this account.
               ready:
                 type: boolean
                 description: Indicates whether the organization and all OUs are ready.

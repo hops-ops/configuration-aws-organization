@@ -13,7 +13,7 @@
   "packageRules": [
     {
       "matchDatasources": ["docker"],
-      "matchSourceUrls": ["hops-ops"],
+      "matchRepositories": ["hops-ops"],
       "enabled": false
     }
   ],

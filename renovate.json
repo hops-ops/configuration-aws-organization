@@ -22,16 +22,11 @@
         "/provider-aws-.*/"
       ],
       "groupName": "aws-providers"
-    },
-    {
-      "matchManagers": ["custom.hops-ops-packages", "custom.external-packages"],
-      "semanticCommitType": "feat"
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "customName": "hops-ops-packages",
       "managerFilePatterns": [
         "apis/**/configuration.yaml",
         "upbound.yaml"
@@ -44,7 +39,6 @@
     },
     {
       "customType": "regex",
-      "customName": "external-packages",
       "managerFilePatterns": [
         "apis/**/configuration.yaml",
         "upbound.yaml"

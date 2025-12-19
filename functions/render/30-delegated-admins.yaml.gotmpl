@@ -28,6 +28,30 @@ spec:
     kind: ProviderConfig
     name: {{ $awsProviderConfig }}
 
+# Usage: Account protected by DelegatedAdministrator
+{{ $adminState := get $observedDelegatedAdmins (toString $index) }}
+{{ if and $adminState $adminState.ready }}
+---
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-account-%s-by-delegated-admin-%d" $accountName $index }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-account-%s-by-delegated-admin-%d" $accountName $index) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: DelegatedAdministrator
+    resourceRef:
+      name: {{ $resourceName }}
+  of:
+    apiVersion: aws.hops.ops.com.ai/v1alpha1
+    kind: Account
+    resourceRef:
+      name: {{ $accountName }}
+{{ end }}
+
 {{ end }}
 
 {{ end }}

@@ -121,7 +121,6 @@ apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: Account
 metadata:
   name: {{ $accountName }}
-  namespace: {{ $namespace }}
   annotations:
     {{ setResourceNameAnnotation (printf "account-%s" $accountName) }}
 spec:

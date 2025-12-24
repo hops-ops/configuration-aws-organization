@@ -1,3 +1,29 @@
+SHELL := /bin/bash
+
+PACKAGE ?= configuration-aws-organization
+XRD_DIR := apis/organizations
+COMPOSITION := $(XRD_DIR)/composition.yaml
+DEFINITION := $(XRD_DIR)/definition.yaml
+EXAMPLE_DEFAULT := examples/organizations/enterprise.yaml
+RENDER_TESTS := $(wildcard tests/test-*)
+E2E_TESTS := $(wildcard tests/e2etest-*)
+
+# Examples list - mirrors GitHub Actions workflow
+# Format: example_path::observed_resources_path (observed_resources_path is optional)
+EXAMPLES := \
+    examples/organizations/individual.yaml:: \
+    examples/organizations/individual.yaml::examples/test/mocks/observed-resources/individual/steps/1/ \
+    examples/organizations/import-existing.yaml:: \
+    examples/organizations/import-existing.yaml::examples/test/mocks/observed-resources/import-existing/steps/1/ \
+    examples/organizations/enterprise.yaml:: \
+    examples/organizations/enterprise.yaml::examples/test/mocks/observed-resources/enterprise/steps/1/ \
+    examples/organizations/enterprise.yaml::examples/test/mocks/observed-resources/enterprise/steps/2/ \
+    examples/organizations/enterprise-override.yaml:: \
+    examples/organizations/e2e-with-infrastructure.yaml:: \
+    examples/organizations/e2e-with-infrastructure.yaml::examples/test/mocks/observed-resources/e2e-with-infrastructure/steps/1/ \
+    examples/organizations/e2e-with-infrastructure.yaml::examples/test/mocks/observed-resources/e2e-with-infrastructure/steps/2/ \
+    examples/organizations/e2e-with-infrastructure.yaml::examples/test/mocks/observed-resources/e2e-with-infrastructure/steps/3/
+
 clean:
 	rm -rf _output
 	rm -rf .up
@@ -6,81 +32,111 @@ clean:
 build:
 	up project build
 
-render: render-enterprise
+# Render all examples (parallel execution, output shown per-job when complete)
+render\:all:
+	@tmpdir=$$(mktemp -d); \
+	pids=""; \
+	for entry in $(EXAMPLES); do \
+		example=$${entry%%::*}; \
+		observed=$${entry#*::}; \
+		outfile="$$tmpdir/$$(echo $$entry | tr '/:' '__')"; \
+		( \
+			if [ -n "$$observed" ]; then \
+				echo "=== Rendering $$example with observed-resources $$observed ==="; \
+				up composition render --xrd=$(DEFINITION) $(COMPOSITION) $$example --observed-resources=$$observed; \
+			else \
+				echo "=== Rendering $$example ==="; \
+				up composition render --xrd=$(DEFINITION) $(COMPOSITION) $$example; \
+			fi; \
+			echo "" \
+		) > "$$outfile" 2>&1 & \
+		pids="$$pids $$!:$$outfile"; \
+	done; \
+	failed=0; \
+	for pair in $$pids; do \
+		pid=$${pair%%:*}; \
+		outfile=$${pair#*:}; \
+		if ! wait $$pid; then failed=1; fi; \
+		cat "$$outfile"; \
+	done; \
+	rm -rf "$$tmpdir"; \
+	exit $$failed
 
-render-all: render-individual render-individual-step-1 render-import-existing render-enterprise render-enterprise-step-1 render-enterprise-step-2 render-e2e-infra render-e2e-infra-step-1 render-e2e-infra-step-2 render-e2e-infra-step-3
+# Validate all examples (parallel execution, output shown per-job when complete)
+validate\:all:
+	@tmpdir=$$(mktemp -d); \
+	pids=""; \
+	for entry in $(EXAMPLES); do \
+		example=$${entry%%::*}; \
+		observed=$${entry#*::}; \
+		outfile="$$tmpdir/$$(echo $$entry | tr '/:' '__')"; \
+		( \
+			if [ -n "$$observed" ]; then \
+				echo "=== Validating $$example with observed-resources $$observed ==="; \
+				up composition render --xrd=$(DEFINITION) $(COMPOSITION) $$example \
+					--observed-resources=$$observed --include-full-xr --quiet | \
+					crossplane beta validate $(XRD_DIR) --error-on-missing-schemas -; \
+			else \
+				echo "=== Validating $$example ==="; \
+				up composition render --xrd=$(DEFINITION) $(COMPOSITION) $$example \
+					--include-full-xr --quiet | \
+					crossplane beta validate $(XRD_DIR) --error-on-missing-schemas -; \
+			fi; \
+			echo "" \
+		) > "$$outfile" 2>&1 & \
+		pids="$$pids $$!:$$outfile"; \
+	done; \
+	failed=0; \
+	for pair in $$pids; do \
+		pid=$${pair%%:*}; \
+		outfile=$${pair#*:}; \
+		if ! wait $$pid; then failed=1; fi; \
+		cat "$$outfile"; \
+	done; \
+	rm -rf "$$tmpdir"; \
+	exit $$failed
 
-render-import-existing:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/import-existing.yaml
+# Shorthand aliases
+.PHONY: render validate
+render: ; @$(MAKE) 'render:all'
+validate: ; @$(MAKE) 'validate:all'
 
-render-individual:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/individual.yaml
+# Single example render (usage: make render:individual)
+render\:%:
+	@example="examples/organizations/$*.yaml"; \
+	if [ -f "$$example" ]; then \
+		echo "=== Rendering $$example ==="; \
+		up composition render --xrd=$(DEFINITION) $(COMPOSITION) $$example; \
+	else \
+		echo "Example $$example not found"; \
+		exit 1; \
+	fi
 
-render-individual-step-1:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/individual.yaml --observed-resources=examples/observed-resources/individual/steps/1/
-
-render-enterprise:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/enterprise.yaml
-
-render-enterprise-step-1:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/enterprise.yaml --observed-resources=examples/observed-resources/enterprise/steps/1/
-
-render-enterprise-step-2:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/enterprise.yaml --observed-resources=examples/observed-resources/enterprise/steps/2/
-
-render-e2e-infra:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/e2e-with-infrastructure.yaml
-
-render-e2e-infra-step-1:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/e2e-with-infrastructure.yaml --observed-resources=examples/observed-resources/e2e-with-infrastructure/steps/1/
-
-render-e2e-infra-step-2:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/e2e-with-infrastructure.yaml --observed-resources=examples/observed-resources/e2e-with-infrastructure/steps/2/
-
-render-e2e-infra-step-3:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/e2e-with-infrastructure.yaml --observed-resources=examples/observed-resources/e2e-with-infrastructure/steps/3/
+# Single example validate (usage: make validate:individual)
+validate\:%:
+	@example="examples/organizations/$*.yaml"; \
+	if [ -f "$$example" ]; then \
+		echo "=== Validating $$example ==="; \
+		up composition render --xrd=$(DEFINITION) $(COMPOSITION) $$example \
+			--include-full-xr --quiet | \
+			crossplane beta validate $(XRD_DIR) --error-on-missing-schemas -; \
+	else \
+		echo "Example $$example not found"; \
+		exit 1; \
+	fi
 
 test:
-	up test run tests/test*
+	up test run $(RENDER_TESTS)
 
-validate: validate-composition-individual validate-composition-individual-step-1 validate-composition-enterprise-step-1 validate-composition-enterprise-step-2 validate-e2e-infra validate-e2e-infra-step-1 validate-e2e-infra-step-2 validate-e2e-infra-step-3 validate-example
-
-validate-composition-individual:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/individual.yaml --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
-
-validate-composition-individual-step-1:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/individual.yaml --observed-resources=examples/observed-resources/individual/steps/1/ --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
-
-validate-composition-enterprise-step-1:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/enterprise.yaml --observed-resources=examples/observed-resources/enterprise/steps/1/ --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
-
-validate-composition-enterprise-step-2:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/enterprise.yaml --observed-resources=examples/observed-resources/enterprise/steps/2/ --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
-
-validate-e2e-infra:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/e2e-with-infrastructure.yaml --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
-
-validate-e2e-infra-step-1:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/e2e-with-infrastructure.yaml --observed-resources=examples/observed-resources/e2e-with-infrastructure/steps/1/ --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
-
-validate-e2e-infra-step-2:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/e2e-with-infrastructure.yaml --observed-resources=examples/observed-resources/e2e-with-infrastructure/steps/2/ --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
-
-validate-e2e-infra-step-3:
-	up composition render --xrd=apis/organizations/definition.yaml apis/organizations/composition.yaml examples/organizations/e2e-with-infrastructure.yaml --observed-resources=examples/observed-resources/e2e-with-infrastructure/steps/3/ --include-full-xr --quiet | crossplane beta validate apis/organizations --error-on-missing-schemas -
-
-validate-example:
-	crossplane beta validate apis/organizations examples/organizations
+e2e:
+	up test run $(E2E_TESTS) --e2e
 
 publish:
 	@if [ -z "$(tag)" ]; then echo "Error: tag is not set. Usage: make publish tag=<version>"; exit 1; fi
 	up project build --push --tag $(tag)
 
 generate-definitions:
-	up xrd generate examples/organizations/example-minimal.yaml
+	up xrd generate $(EXAMPLE_DEFAULT)
 
 generate-function:
-	up function generate --language=go-templating render apis/organizations/composition.yaml
-
-e2e:
-	up test run tests/e2etest* --e2e
+	up function generate --language=go-templating render $(COMPOSITION)

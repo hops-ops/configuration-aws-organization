@@ -6,8 +6,7 @@ metadata:
   name: acme
   namespace: acme
 spec:
-  managementPolicies:
-    - "*"
+  # managementPolicies defaults to ["*"] - full lifecycle management
   # Optional: customize organization settings
   # Defaults: featureSet=ALL, enabledPolicyTypes=[all 4], awsServiceAccessPrincipals=[]
   # Any fields set here override the defaults (last-wins in YAML)

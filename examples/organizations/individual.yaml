@@ -1,15 +1,16 @@
 # Individual setup: minimal organization for solo founders and small teams
 # No OUs, no accounts - just an organization with good defaults
-# Defaults applied: featureSet=ALL, all 4 policy types, hops tag
+# Defaults applied: featureSet=ALL, all 4 policy types, managementPolicies=["*"], hops tag
 apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: Organization
 metadata:
   name: my-org
   namespace: default
 spec:
-  managementPolicies:
-    - "*"
-  # organization field is omitted - gets defaults automatically
+  # All fields are optional with sensible defaults:
+  # - managementPolicies: ["*"]
+  # - providerConfigRef.name: "default"
+  # - organization: featureSet=ALL, all 4 policy types
   tags:
     organization: my-org
     # hops: "true" is added automatically

@@ -53,8 +53,8 @@ spec:
     parentId: {{ $parentId | quote }}
     tags: {{ toJson $tags }}
   providerConfigRef:
-    kind: ProviderConfig
-    name: {{ $awsProviderConfig }}
+    kind: {{ $providerConfigKind }}
+    name: {{ $providerConfigName }}
 {{ end }}
 
 # Once OU is ready, create accounts and usage resources
@@ -133,7 +133,7 @@ spec:
   {{ end }}
   parentId: {{ $ouId }}
   managementPolicies: {{ toJson $accountManagementPolicies }}
-  providerConfigName: {{ $awsProviderConfig }}
+  providerConfigName: {{ $providerConfigName }}
   {{ $accountTags := .tags | default (dict) }}
   {{ $mergedTags := merge $tags $accountTags }}
   tags:

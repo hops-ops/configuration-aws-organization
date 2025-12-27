@@ -1,33 +1,42 @@
 # code: language=yaml
 # yaml-language-server: $schema=../../.up/json/models/index.schema.json
 
-# Get the composite resource
-{{ $xr := getCompositeResource . }}
-{{ $spec := $xr.spec }}
-{{ $metadata := $xr.metadata }}
+#
+# Desired Values
+# ==============
+# Extract spec values from the XR and set up shared variables.
+# These are used by all subsequent template files.
+#
 
-# External name (for adopting existing resources)
+{{ $xr := getCompositeResource . }}
+{{ $metadata := $xr.metadata | default (dict) }}
+{{ $spec := $xr.spec | default (dict) }}
+
+# ==============================================================================
+# Core Configuration
+# ==============================================================================
+{{ $orgName := $metadata.name }}
+{{ $managementPolicies := $spec.managementPolicies | default (list "*") }}
 {{ $externalName := $spec.externalName | default "" }}
 
-# Management policies
-{{ $managementPolicies := $spec.managementPolicies | default (list "*") }}
+# ==============================================================================
+# Provider Config
+# ==============================================================================
+{{ $providerConfigRef := $spec.providerConfigRef | default (dict) }}
+{{ $providerConfigKind := $providerConfigRef.kind | default "ProviderConfig" }}
+{{ $providerConfigName := $providerConfigRef.name | default "default" }}
 
-# Organization-specific management policies (falls back to global if not set)
+# ==============================================================================
+# Organization Settings
+# ==============================================================================
 {{ $organization := $spec.organization | default (dict) }}
 {{ $organizationManagementPolicies := $organization.managementPolicies | default $managementPolicies }}
-
-# AWS settings
-{{ $aws := $spec.aws | default (dict) }}
-{{ $awsProviderConfig := $aws.providerConfig | default "default" }}
-
-# Organization settings (note: $organization already extracted above for managementPolicies)
 {{ $organizationalUnits := $spec.organizationalUnits | default (list) }}
 {{ $delegatedAdministrators := $spec.delegatedAdministrators | default (list) }}
 
-# Tags
+# ==============================================================================
+# Default Tags
+# ==============================================================================
 {{ $defaultTags := dict "hops" "true" }}
 {{ $userTags := $spec.tags | default (dict) }}
 {{ $tags := merge $defaultTags $userTags }}
-
-# Resource naming
-{{ $orgName := $metadata.name }}

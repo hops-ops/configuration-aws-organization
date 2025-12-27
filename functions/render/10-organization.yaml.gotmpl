@@ -38,5 +38,5 @@ spec:
     {{- end }}
     {{- end }}
   providerConfigRef:
-    kind: ProviderConfig
-    name: {{ $awsProviderConfig }}
+    kind: {{ $providerConfigKind }}
+    name: {{ $providerConfigName }}

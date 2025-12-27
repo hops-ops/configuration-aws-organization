@@ -15,6 +15,7 @@ _items = [
                     spec: {
                         managementPolicies: ["*"]
                         providerConfigRef: {
+                            kind: "ProviderConfig"
                             name: "default"
                         }
                         forProvider: {
@@ -348,6 +349,7 @@ _items = [
                     spec: {
                         managementPolicies: ["*"]
                         providerConfigRef: {
+                            kind: "ProviderConfig"
                             name: "default"
                         }
                         forProvider: {
@@ -376,6 +378,7 @@ _items = [
                     spec: {
                         managementPolicies: ["*"]
                         providerConfigRef: {
+                            kind: "ProviderConfig"
                             name: "default"
                         }
                         forProvider: {
@@ -466,6 +469,10 @@ _items = [
                     }
                     spec: {
                         managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+                        providerConfigRef: {
+                            kind: "ProviderConfig"
+                            name: "default"
+                        }
                         forProvider: {
                             name: "Infrastructure"
                             parentId: "r-root"
@@ -479,6 +486,10 @@ _items = [
                     metadata: {name: "ou-test"}
                     spec: {
                         managementPolicies: ["*"]
+                        providerConfigRef: {
+                            kind: "ProviderConfig"
+                            name: "default"
+                        }
                         forProvider: {
                             name: "Test"
                             parentId: "r-root"
@@ -596,6 +607,10 @@ _items = [
                     metadata: {name: "ou-test-e2e"}
                     spec: {
                         managementPolicies: ["*"]
+                        providerConfigRef: {
+                            kind: "ProviderConfig"
+                            name: "default"
+                        }
                         forProvider: {
                             name: "E2E"
                             parentId: "ou-test-123"

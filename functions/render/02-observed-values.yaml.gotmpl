@@ -1,150 +1,105 @@
 # code: language=yaml
 # yaml-language-server: $schema=../../.up/json/models/index.schema.json
 
-# Observed resources for status projection
+#
+# Observed Values
+# ===============
+# Extract observed state from resources for status projection and gating.
+#
+
 {{ $observed := $.observed.resources | default (dict) }}
 
-# Organization observation
-{{ $organizationObservation := get $observed "organization" }}
+# ==============================================================================
+# Organization Observation
+# ==============================================================================
+{{ $orgObs := (get $observed "organization") | default (dict) }}
+{{ $orgResource := $orgObs.resource | default (dict) }}
+{{ $orgStatus := $orgResource.status | default (dict) }}
+{{ $orgAtProvider := $orgStatus.atProvider | default (dict) }}
+{{ $orgConditions := $orgStatus.conditions | default (list) }}
+
+# Check if organization is ready
 {{ $organizationReady := false }}
-{{ $organizationId := "Pending" }}
-{{ $managementAccountId := "Pending" }}
-{{ $rootId := "Pending" }}
-
-{{ with $organizationObservation }}
-  {{ $resource := .resource | default (dict) }}
-  {{ $status := $resource.status | default (dict) }}
-  {{ $conditions := $status.conditions | default (list) }}
-  {{ range $conditions }}
-    {{ $conditionType := default "" (get . "type") }}
-    {{ $conditionStatus := default "" (get . "status") }}
-    {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
-      {{ $organizationReady = true }}
-    {{ end }}
-  {{ end }}
-
-  # Extract organization details
-  {{ $atProvider := $status.atProvider | default (dict) }}
-  {{ $candidateOrgId := $atProvider.id | default "" }}
-  {{ if $candidateOrgId }}
-    {{ $organizationId = $candidateOrgId }}
-  {{ end }}
-  {{ $candidateMgmtAccount := $atProvider.masterAccountId | default "" }}
-  {{ if $candidateMgmtAccount }}
-    {{ $managementAccountId = $candidateMgmtAccount }}
-  {{ end }}
-  {{ $roots := $atProvider.roots | default (list) }}
-  {{ if gt (len $roots) 0 }}
-    {{ $root := index $roots 0 }}
-    {{ $candidateRootId := $root.id | default "" }}
-    {{ if $candidateRootId }}
-      {{ $rootId = $candidateRootId }}
-    {{ end }}
-  {{ end }}
+{{ range $orgConditions }}
+  {{- if and (eq (get . "type") "Ready") (eq (get . "status") "True") }}
+    {{- $organizationReady = true }}
+  {{- end }}
 {{ end }}
 
-# Build a map of observed OU states
-# Key: OU path, Value: {ready: bool, id: string}
+# Extract organization IDs
+{{ $organizationId := $orgAtProvider.id | default "Pending" }}
+{{ $managementAccountId := $orgAtProvider.masterAccountId | default "Pending" }}
+{{ $roots := $orgAtProvider.roots | default (list) }}
+{{ $rootId := "Pending" }}
+{{ if gt (len $roots) 0 }}
+  {{- $rootId = (index $roots 0).id | default "Pending" }}
+{{ end }}
+
+# ==============================================================================
+# Organizational Units Observation
+# ==============================================================================
+# Map: OU path -> {ready: bool, id: string}
 {{ $observedOUs := dict }}
 
-# Populate observed OUs from organizationalUnits spec (path-based)
 {{ range $organizationalUnits }}
-  {{ $ouPath := .path }}
-  # Convert path to resource name: Workloads/Prod -> ou-workloads-prod
-  {{ $pathWithDashes := $ouPath | replace "/" "-" }}
-  {{ $resourceName := printf "ou-%s" ($pathWithDashes | lower) }}
-
-  {{ $ouObservation := get $observed $resourceName }}
-  {{ $ouReady := false }}
-  {{ $ouId := "Pending" }}
-
-  {{ with $ouObservation }}
-    {{ $resource := .resource | default (dict) }}
-    {{ $status := $resource.status | default (dict) }}
-    {{ $conditions := $status.conditions | default (list) }}
-    {{ range $conditions }}
-      {{ $conditionType := default "" (get . "type") }}
-      {{ $conditionStatus := default "" (get . "status") }}
-      {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
-        {{ $ouReady = true }}
-      {{ end }}
-    {{ end }}
-
-    {{ $atProvider := $status.atProvider | default (dict) }}
-    {{ $candidateId := $atProvider.id | default "" }}
-    {{ if $candidateId }}
-      {{ $ouId = $candidateId }}
-    {{ end }}
-  {{ end }}
-
-  {{ $_ := set $observedOUs $ouPath (dict "ready" $ouReady "id" $ouId) }}
+  {{- $ouPath := .path }}
+  {{- $pathWithDashes := $ouPath | replace "/" "-" }}
+  {{- $resourceName := printf "ou-%s" ($pathWithDashes | lower) }}
+  {{- $ouObs := (get $observed $resourceName) | default (dict) }}
+  {{- $ouResource := $ouObs.resource | default (dict) }}
+  {{- $ouStatus := $ouResource.status | default (dict) }}
+  {{- $ouAtProvider := $ouStatus.atProvider | default (dict) }}
+  {{- $ouConditions := $ouStatus.conditions | default (list) }}
+  {{- $ouReady := false }}
+  {{- range $ouConditions }}
+    {{- if and (eq (get . "type") "Ready") (eq (get . "status") "True") }}
+      {{- $ouReady = true }}
+    {{- end }}
+  {{- end }}
+  {{- $_ := set $observedOUs $ouPath (dict "ready" $ouReady "id" ($ouAtProvider.id | default "Pending")) }}
 {{ end }}
 
-# Build a map of observed delegated administrator states
-# Key: index, Value: {ready: bool, accountName: string}
+# ==============================================================================
+# Delegated Administrators Observation
+# ==============================================================================
+# Map: index -> {ready: bool, accountName: string}
 {{ $observedDelegatedAdmins := dict }}
 
 {{ range $index, $admin := $delegatedAdministrators }}
-  {{ $resourceName := printf "delegated-admin-%d" $index }}
-  {{ $adminObservation := get $observed $resourceName }}
-  {{ $adminReady := false }}
-
-  {{ with $adminObservation }}
-    {{ $resource := .resource | default (dict) }}
-    {{ $status := $resource.status | default (dict) }}
-    {{ $conditions := $status.conditions | default (list) }}
-    {{ range $conditions }}
-      {{ $conditionType := default "" (get . "type") }}
-      {{ $conditionStatus := default "" (get . "status") }}
-      {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
-        {{ $adminReady = true }}
-      {{ end }}
-    {{ end }}
-  {{ end }}
-
-  {{ $accountRef := $admin.accountRef }}
-  {{ $accountName := $accountRef.name }}
-  {{ $_ := set $observedDelegatedAdmins (toString $index) (dict "ready" $adminReady "accountName" $accountName) }}
+  {{- $resourceName := printf "delegated-admin-%d" $index }}
+  {{- $adminObs := (get $observed $resourceName) | default (dict) }}
+  {{- $adminResource := $adminObs.resource | default (dict) }}
+  {{- $adminStatus := $adminResource.status | default (dict) }}
+  {{- $adminConditions := $adminStatus.conditions | default (list) }}
+  {{- $adminReady := false }}
+  {{- range $adminConditions }}
+    {{- if and (eq (get . "type") "Ready") (eq (get . "status") "True") }}
+      {{- $adminReady = true }}
+    {{- end }}
+  {{- end }}
+  {{- $_ := set $observedDelegatedAdmins (toString $index) (dict "ready" $adminReady "accountName" $admin.accountRef.name) }}
 {{ end }}
 
-# Build a map of observed Account states
-# Key: account name, Value: {ready: bool, id: string, adminRoleArn: string}
+# ==============================================================================
+# Accounts Observation
+# ==============================================================================
+# Map: account name -> {ready: bool, id: string, adminRoleArn: string}
 {{ $observedAccounts := dict }}
 
-# Collect all accounts from all OUs
 {{ range $ou := $organizationalUnits }}
-  {{ $ouAccounts := $ou.accounts | default (list) }}
-  {{ range $account := $ouAccounts }}
-    {{ $accountName := $account.name }}
-    {{ $resourceName := printf "account-%s" $accountName }}
-    {{ $accountObservation := get $observed $resourceName }}
-    {{ $accountReady := false }}
-    {{ $accountId := "Pending" }}
-    {{ $adminRoleArn := "Pending" }}
-
-    {{ with $accountObservation }}
-      {{ $resource := .resource | default (dict) }}
-      {{ $status := $resource.status | default (dict) }}
-      {{ $conditions := $status.conditions | default (list) }}
-      {{ range $conditions }}
-        {{ $conditionType := default "" (get . "type") }}
-        {{ $conditionStatus := default "" (get . "status") }}
-        {{ if and (eq $conditionType "Ready") (eq $conditionStatus "True") }}
-          {{ $accountReady = true }}
-        {{ end }}
-      {{ end }}
-
-      # Get account ID from Account XRD status
-      {{ $candidateId := $status.accountId | default "" }}
-      {{ if $candidateId }}
-        {{ $accountId = $candidateId }}
-      {{ end }}
-      {{ $candidateArn := $status.adminRoleArn | default "" }}
-      {{ if $candidateArn }}
-        {{ $adminRoleArn = $candidateArn }}
-      {{ end }}
-    {{ end }}
-
-    {{ $_ := set $observedAccounts $accountName (dict "ready" $accountReady "id" $accountId "adminRoleArn" $adminRoleArn) }}
-  {{ end }}
+  {{- range $account := ($ou.accounts | default (list)) }}
+    {{- $accountName := $account.name }}
+    {{- $resourceName := printf "account-%s" $accountName }}
+    {{- $accObs := (get $observed $resourceName) | default (dict) }}
+    {{- $accResource := $accObs.resource | default (dict) }}
+    {{- $accStatus := $accResource.status | default (dict) }}
+    {{- $accConditions := $accStatus.conditions | default (list) }}
+    {{- $accReady := false }}
+    {{- range $accConditions }}
+      {{- if and (eq (get . "type") "Ready") (eq (get . "status") "True") }}
+        {{- $accReady = true }}
+      {{- end }}
+    {{- end }}
+    {{- $_ := set $observedAccounts $accountName (dict "ready" $accReady "id" ($accStatus.accountId | default "Pending") "adminRoleArn" ($accStatus.adminRoleArn | default "Pending")) }}
+  {{- end }}
 {{ end }}

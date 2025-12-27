@@ -16,18 +16,29 @@ spec:
         properties:
           spec:
             properties:
+              providerConfigRef:
+                type: object
+                description: Reference to the ProviderConfig for AWS API operations.
+                properties:
+                  kind:
+                    type: string
+                    description: Kind of the provider config (ProviderConfig or ClusterProviderConfig).
+                    enum:
+                      - ProviderConfig
+                      - ClusterProviderConfig
+                    default: ProviderConfig
+                  name:
+                    type: string
+                    description: Name of the provider config.
+                    default: default
+                required:
+                  - name
               externalName:
                 type: string
                 description: |
                   Sets the crossplane.io/external-name annotation on the Organization resource.
                   Use this to adopt an existing AWS Organization by specifying its ID (e.g., o-abc123xyz).
                   When set, Crossplane will import the existing organization instead of creating a new one.
-              aws:
-                properties:
-                  providerConfig:
-                    type: string
-                    description: AWS provider config name to use for organization resources.
-                type: object
               managementPolicies:
                 description: ManagementPolicies for AWS resources. Defaults to ["*"] which includes all operations (Create, Observe, Update, Delete, LateInitialize). To orphan resources on deletion, use ["Create", "Observe", "Update", "LateInitialize"].
                 type: array
@@ -171,8 +182,6 @@ spec:
                 type: object
                 description: Tags to apply to the organization and OUs.
                 x-kubernetes-preserve-unknown-fields: true
-            required:
-              - managementPolicies
             type: object
           status:
             properties:

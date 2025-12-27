@@ -6,8 +6,7 @@ metadata:
   name: acme-override
   namespace: acme
 spec:
-  managementPolicies:
-    - "*"
+  # managementPolicies defaults to ["*"]
   organization:
     featureSet: CONSOLIDATED_BILLING
     enabledPolicyTypes:

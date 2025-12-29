@@ -179,7 +179,10 @@ _items = [
                     spec: {
                         parentId: "ou-infra"
                         email: "hops@acme.com"
-                        providerConfigName: "default"
+                        providerConfigRef: {
+                            name: "default"
+                            kind: "ProviderConfig"
+                        }
                     }
                 },
                 {
@@ -189,7 +192,10 @@ _items = [
                     spec: {
                         parentId: "ou-workloads-prod"
                         email: "prod@acme.com"
-                        providerConfigName: "default"
+                        providerConfigRef: {
+                            name: "default"
+                            kind: "ProviderConfig"
+                        }
                     }
                 },
                 # Assert Usage resources are created

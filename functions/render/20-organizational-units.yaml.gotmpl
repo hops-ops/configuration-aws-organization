@@ -133,7 +133,9 @@ spec:
   {{ end }}
   parentId: {{ $ouId }}
   managementPolicies: {{ toJson $accountManagementPolicies }}
-  providerConfigName: {{ $providerConfigName }}
+  providerConfigRef:
+    name: {{ $providerConfigName }}
+    kind: {{ $providerConfigKind }}
   {{ $accountTags := .tags | default (dict) }}
   {{ $mergedTags := merge $tags $accountTags }}
   tags:

@@ -21,6 +21,7 @@
     {{- $entry := get $raw $resourceName | default dict }}
     {{- $resource := $entry.resource | default dict }}
     {{- $status := $resource.status | default dict }}
+    {{- $atProvider := $status.atProvider | default dict }}
 
     # Check readiness from conditions
     {{- $ready := false }}
@@ -32,8 +33,8 @@
 
     {{- $accounts = set $accounts $accountName (dict
       "ready" $ready
-      "id" ($status.accountId | default "")
-      "adminRoleArn" ($status.adminRoleArn | default "")
+      "id" ($atProvider.accountId | default "")
+      "adminRoleArn" ($atProvider.adminRoleArn | default "")
       "resourceName" $resourceName
     ) }}
   {{- end }}

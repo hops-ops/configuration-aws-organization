@@ -1,0 +1,36 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Organization Resource
+# =====================
+# Renders the AWS Organization managed resource.
+#
+
+{{- if $state.organization.org.render }}
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: Organization
+metadata:
+  name: {{ $state.organization.name }}
+  annotations:
+    {{ setResourceNameAnnotation "organization" }}
+    {{- if $state.organization.org.externalName }}
+    crossplane.io/external-name: "{{ $state.organization.org.externalName }}"
+    {{- end }}
+spec:
+  managementPolicies: {{ toJson $state.organization.org.managementPolicies }}
+  forProvider:
+    featureSet: {{ $state.organization.org.featureSet }}
+    enabledPolicyTypes: {{ toJson $state.organization.org.enabledPolicyTypes }}
+    awsServiceAccessPrincipals: {{ toJson $state.organization.org.awsServiceAccessPrincipals }}
+    {{- /* Pass through any other user-provided organization config */}}
+    {{- range $key, $value := $state.organization.org.passThrough }}
+    {{- if and (ne $key "managementPolicies") (ne $key "featureSet") (ne $key "enabledPolicyTypes") (ne $key "awsServiceAccessPrincipals") }}
+    {{ $key }}: {{ toYaml $value | nindent 6 | trim }}
+    {{- end }}
+    {{- end }}
+  providerConfigRef:
+    name: {{ $state.organization.providerConfig.name }}
+    kind: {{ $state.organization.providerConfig.kind }}
+{{- end }}

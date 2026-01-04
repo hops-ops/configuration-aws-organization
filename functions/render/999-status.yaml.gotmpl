@@ -1,0 +1,34 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Status Output
+# =============
+# Outputs $state.status to the XR status.
+# All computation is done in 010-state-status.yaml.gotmpl.
+#
+
+{{- $s := $state.status }}
+---
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Organization
+status:
+  ready: {{ $s.ready }}
+  organizationId: {{ $s.organizationId | quote }}
+  managementAccountId: {{ $s.managementAccountId | quote }}
+  rootId: {{ $s.rootId | quote }}
+  {{- if gt (len $s.organizationalUnits) 0 }}
+  organizationalUnits:
+    {{- range $path, $id := $s.organizationalUnits }}
+    {{ $path }}: {{ $id | quote }}
+    {{- end }}
+  {{- end }}
+  {{- if gt (len $s.accounts) 0 }}
+  accounts:
+    {{- range $account := $s.accounts }}
+    - name: {{ $account.name | quote }}
+      id: {{ $account.id | quote }}
+      ready: {{ $account.ready }}
+      adminRoleArn: {{ $account.adminRoleArn | quote }}
+    {{- end }}
+  {{- end }}

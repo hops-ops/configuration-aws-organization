@@ -1,0 +1,38 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Status Computed State
+# =====================
+# Compute all status values from observed state.
+# The 999-status.yaml.gotmpl template will output $state.status.
+#
+
+{{- $obs := $state.observed }}
+
+# Build organizational units status map
+{{- $ouStatus := dict }}
+{{- range $path, $ou := $obs.ous }}
+  {{- $ouStatus = set $ouStatus $path $ou.id }}
+{{- end }}
+
+# Build accounts status list
+{{- $accountsStatus := list }}
+{{- range $name, $account := $obs.accounts }}
+  {{- $accountsStatus = append $accountsStatus (dict
+    "name" $name
+    "id" $account.id
+    "ready" $account.ready
+    "adminRoleArn" $account.adminRoleArn
+  ) }}
+{{- end }}
+
+# Set $state.status
+{{- $state = set $state "status" (dict
+  "ready" $obs.organization.ready
+  "organizationId" (ternary $obs.organization.id "Pending" (ne $obs.organization.id ""))
+  "managementAccountId" (ternary $obs.organization.masterAccountId "Pending" (ne $obs.organization.masterAccountId ""))
+  "rootId" (ternary $obs.organization.rootId "Pending" (ne $obs.organization.rootId ""))
+  "organizationalUnits" $ouStatus
+  "accounts" $accountsStatus
+) }}

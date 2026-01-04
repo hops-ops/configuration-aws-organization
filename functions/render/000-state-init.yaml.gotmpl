@@ -1,0 +1,50 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# State Initialization
+# ====================
+# Initialize $state with spec.raw (user input) and spec.effective (with defaults).
+# All subsequent templates use $state.spec.effective for values.
+#
+
+{{- $xr := getCompositeResource . }}
+{{- $metadata := $xr.metadata | default dict }}
+{{- $spec := $xr.spec | default dict }}
+
+# Extract providerConfigRef with defaults
+{{- $providerConfigRef := $spec.providerConfigRef | default dict }}
+{{- $providerConfigName := $providerConfigRef.name | default "default" }}
+{{- $providerConfigKind := $providerConfigRef.kind | default "ProviderConfig" }}
+
+# Extract organization settings
+{{- $organization := $spec.organization | default dict }}
+
+# Build effective spec with all defaults applied
+{{- $state := dict
+  "spec" (dict
+    "raw" $spec
+    "effective" (dict
+      "name" $metadata.name
+      "providerConfigRef" (dict
+        "name" $providerConfigName
+        "kind" $providerConfigKind
+      )
+      "managementPolicies" ($spec.managementPolicies | default (list "*"))
+      "externalName" ($spec.externalName | default "")
+      "organization" (dict
+        "managementPolicies" ($organization.managementPolicies | default ($spec.managementPolicies | default (list "*")))
+        "featureSet" ($organization.featureSet | default "ALL")
+        "enabledPolicyTypes" ($organization.enabledPolicyTypes | default (list "SERVICE_CONTROL_POLICY" "TAG_POLICY" "BACKUP_POLICY" "AISERVICES_OPT_OUT_POLICY"))
+        "awsServiceAccessPrincipals" ($organization.awsServiceAccessPrincipals | default list)
+        "passThrough" $organization
+      )
+      "organizationalUnits" ($spec.organizationalUnits | default list)
+      "delegatedAdministrators" ($spec.delegatedAdministrators | default list)
+      "tags" (merge (dict "hops" "true") ($spec.tags | default dict))
+    )
+  )
+  "observed" (dict)
+  "organization" (dict)
+  "status" (dict)
+}}

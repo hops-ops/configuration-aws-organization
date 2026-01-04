@@ -1,0 +1,40 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Observed Delegated Administrators State
+# =======================================
+# Extract delegated admin observations from $.observed.resources.
+# Sets $state.observed.delegatedAdmins slice as map[index] -> {ready, accountName}.
+#
+
+{{- $raw := $.observed.resources | default dict }}
+{{- $eff := $state.spec.effective }}
+{{- $delegatedAdmins := dict }}
+
+# Iterate over configured delegated administrators
+{{- range $index, $admin := $eff.delegatedAdministrators }}
+  {{- $resourceName := printf "delegated-admin-%d" $index }}
+
+  {{- $entry := get $raw $resourceName | default dict }}
+  {{- $resource := $entry.resource | default dict }}
+  {{- $status := $resource.status | default dict }}
+
+  # Check readiness from conditions
+  {{- $ready := false }}
+  {{- range ($status.conditions | default list) }}
+    {{- if and (eq .type "Ready") (eq .status "True") }}
+      {{- $ready = true }}
+    {{- end }}
+  {{- end }}
+
+  {{- $delegatedAdmins = set $delegatedAdmins (toString $index) (dict
+    "ready" $ready
+    "accountName" $admin.accountRef.name
+    "servicePrincipal" $admin.servicePrincipal
+    "resourceName" $resourceName
+  ) }}
+{{- end }}
+
+# Set observed.delegatedAdmins slice
+{{- $state = set $state "observed" (merge $state.observed (dict "delegatedAdmins" $delegatedAdmins)) }}

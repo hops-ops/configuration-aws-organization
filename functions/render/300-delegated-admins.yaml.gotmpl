@@ -1,0 +1,56 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Delegated Administrator Resources
+# ==================================
+# Renders DelegatedAdministrator resources and Usage protection.
+#
+
+{{- if $state.organization.delegatedAdmins.render }}
+
+{{- range $admin := $state.organization.delegatedAdmins.items }}
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: DelegatedAdministrator
+metadata:
+  name: {{ $admin.resourceName }}
+  annotations:
+    {{ setResourceNameAnnotation $admin.resourceName }}
+spec:
+  managementPolicies: {{ toJson $state.organization.managementPolicies }}
+  forProvider:
+    accountIdSelector:
+      matchLabels:
+        crossplane.io/claim-name: {{ $admin.accountName }}
+    servicePrincipal: {{ $admin.servicePrincipal }}
+  providerConfigRef:
+    name: {{ $state.organization.providerConfig.name }}
+    kind: {{ $state.organization.providerConfig.kind }}
+
+{{- /* Usage: Account protected by DelegatedAdministrator */}}
+{{- if $admin.ready }}
+---
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-account-%s-by-delegated-admin-%d" $admin.accountName $admin.index }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-account-%s-by-delegated-admin-%d" $admin.accountName $admin.index) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: DelegatedAdministrator
+    resourceRef:
+      name: {{ $admin.resourceName }}
+  of:
+    apiVersion: aws.hops.ops.com.ai/v1alpha1
+    kind: Account
+    resourceRef:
+      name: {{ $admin.accountName }}
+{{- end }}
+
+{{- end }}{{/* range $admin */}}
+
+{{- end }}{{/* if $state.organization.delegatedAdmins.render */}}

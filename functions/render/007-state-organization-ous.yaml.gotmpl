@@ -1,0 +1,88 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Organizational Units Computed State
+# ====================================
+# Set $state.organization.ous slice with render flag and computed items.
+# Each OU computes its parentId and whether it should render.
+#
+
+{{- $eff := $state.spec.effective }}
+{{- $obs := $state.observed }}
+
+# OUs render only when organization is ready and has rootId
+{{- $orgReady := $obs.organization.ready }}
+{{- $rootId := $obs.organization.rootId }}
+{{- $render := and $orgReady (ne $rootId "") }}
+
+# Build OU items with computed parent IDs
+{{- $items := list }}
+
+{{- range $ou := $eff.organizationalUnits }}
+  {{- $ouPath := $ou.path }}
+  {{- $pathWithDashes := $ouPath | replace "/" "-" }}
+  {{- $resourceName := printf "ou-%s" ($pathWithDashes | lower) }}
+
+  # Get OU name (last segment of path)
+  {{- $pathParts := splitList "/" $ouPath }}
+  {{- $ouName := last $pathParts }}
+  {{- $pathDepth := len $pathParts }}
+
+  # Determine parent path and ID
+  {{- $parentId := "" }}
+  {{- $parentResourceName := "" }}
+  {{- $canRender := false }}
+
+  {{- if eq $pathDepth 1 }}
+    # Top-level OU: parent is root
+    {{- $parentId = $rootId }}
+    {{- $canRender = and $render (ne $parentId "") }}
+  {{- else }}
+    # Nested OU: parent is another OU
+    {{- $parentPath := trimSuffix (printf "/%s" $ouName) $ouPath }}
+    {{- $parentPathWithDashes := $parentPath | replace "/" "-" }}
+    {{- $parentResourceName = printf "ou-%s" ($parentPathWithDashes | lower) }}
+
+    # Check if parent OU is ready
+    {{- $parentObs := get $obs.ous $parentPath }}
+    {{- if and $parentObs $parentObs.ready }}
+      {{- $parentId = $parentObs.id }}
+      {{- $canRender = and $render (ne $parentId "") }}
+    {{- end }}
+  {{- end }}
+
+  # Get observed state for this OU
+  {{- $ouObs := get $obs.ous $ouPath }}
+  {{- $ouReady := false }}
+  {{- $ouId := "" }}
+  {{- if $ouObs }}
+    {{- $ouReady = $ouObs.ready }}
+    {{- $ouId = $ouObs.id }}
+  {{- end }}
+
+  # Build computed OU item
+  {{- $ouItem := dict
+    "path" $ouPath
+    "name" $ouName
+    "resourceName" $resourceName
+    "depth" $pathDepth
+    "parentId" $parentId
+    "parentResourceName" $parentResourceName
+    "canRender" $canRender
+    "ready" $ouReady
+    "id" $ouId
+    "externalName" ($ou.externalName | default "")
+    "managementPolicies" ($ou.managementPolicies | default $eff.managementPolicies)
+    "accounts" ($ou.accounts | default list)
+  }}
+
+  {{- $items = append $items $ouItem }}
+{{- end }}
+
+# Set organization.ous slice
+{{- $ousSlice := dict
+  "render" $render
+  "items" $items
+}}
+{{- $state = set $state "organization" (merge $state.organization (dict "ous" $ousSlice)) }}

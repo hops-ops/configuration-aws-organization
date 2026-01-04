@@ -1,0 +1,38 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Observed Organization State
+# ===========================
+# Extract organization observation from $.observed.resources.
+# Sets $state.observed.organization slice.
+#
+
+{{- $raw := $.observed.resources | default dict }}
+{{- $entry := get $raw "organization" | default dict }}
+{{- $resource := $entry.resource | default dict }}
+{{- $status := $resource.status | default dict }}
+{{- $atProvider := $status.atProvider | default dict }}
+
+# Check readiness from conditions
+{{- $ready := false }}
+{{- range ($status.conditions | default list) }}
+  {{- if and (eq .type "Ready") (eq .status "True") }}
+    {{- $ready = true }}
+  {{- end }}
+{{- end }}
+
+# Extract root ID from roots array
+{{- $roots := $atProvider.roots | default list }}
+{{- $rootId := "" }}
+{{- if gt (len $roots) 0 }}
+  {{- $rootId = (index $roots 0).id | default "" }}
+{{- end }}
+
+# Set observed.organization slice
+{{- $state = set $state "observed" (merge $state.observed (dict "organization" (dict
+  "ready" $ready
+  "id" ($atProvider.id | default "")
+  "masterAccountId" ($atProvider.masterAccountId | default "")
+  "rootId" $rootId
+))) }}

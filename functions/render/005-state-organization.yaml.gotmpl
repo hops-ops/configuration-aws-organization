@@ -1,0 +1,19 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Core Organization Computed State
+# ================================
+# Set $state.organization with core values shared by all resources.
+#
+
+{{- $eff := $state.spec.effective }}
+
+# Core organization state - shared by all resources
+{{- $org := dict
+  "name" $eff.name
+  "providerConfig" $eff.providerConfigRef
+  "managementPolicies" $eff.managementPolicies
+  "tags" $eff.tags
+}}
+{{- $state = set $state "organization" $org }}

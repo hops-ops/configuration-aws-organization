@@ -1,0 +1,143 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Organizational Units, Accounts, and Usage Resources
+# ====================================================
+# Renders OUs, their accounts, and Usage resources for deletion protection.
+#
+
+{{- if $state.organization.ous.render }}
+
+{{- range $ou := $state.organization.ous.items }}
+
+{{- /* Only render OU if it can render (parent is ready) */}}
+{{- if $ou.canRender }}
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: OrganizationalUnit
+metadata:
+  name: {{ $ou.resourceName }}
+  annotations:
+    {{ setResourceNameAnnotation $ou.resourceName }}
+    {{- if $ou.externalName }}
+    crossplane.io/external-name: {{ $ou.externalName | quote }}
+    {{- end }}
+spec:
+  managementPolicies: {{ toJson $ou.managementPolicies }}
+  forProvider:
+    name: {{ $ou.name }}
+    parentId: {{ $ou.parentId | quote }}
+    tags: {{ toJson $state.organization.tags }}
+  providerConfigRef:
+    name: {{ $state.organization.providerConfig.name }}
+    kind: {{ $state.organization.providerConfig.kind }}
+{{- end }}
+
+{{- /* Once OU is ready, create Usage resources and Accounts */}}
+{{- if $ou.ready }}
+
+{{- /* Usage: protect Organization or parent OU from deletion by this OU */}}
+{{- if eq $ou.depth 1 }}
+---
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-org-%s-by-ou-%s" $state.organization.name $ou.resourceName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-org-by-%s" $ou.resourceName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $ou.resourceName }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: Organization
+    resourceRef:
+      name: {{ $state.organization.name }}
+{{- else }}
+---
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-ou-%s-by-ou-%s" $ou.parentResourceName $ou.resourceName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-%s" $ou.parentResourceName $ou.resourceName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $ou.resourceName }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $ou.parentResourceName }}
+{{- end }}
+
+{{- /* Create accounts under this OU */}}
+{{- range $account := $ou.accounts }}
+{{- $accountName := $account.name }}
+{{- $accountExternalName := $account.externalName | default "" }}
+{{- $accountManagementPolicies := $account.managementPolicies | default $state.organization.managementPolicies }}
+{{- $overrideSpec := $account.overrideSpec | default dict }}
+{{- $hasOverride := gt (len $overrideSpec) 0 }}
+---
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Account
+metadata:
+  name: {{ $accountName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "account-%s" $accountName) }}
+spec:
+  {{- if $hasOverride }}
+  {{ toYaml $overrideSpec | nindent 2 }}
+  {{- else }}
+  email: {{ $account.email | quote }}
+  {{- if $accountExternalName }}
+  externalName: {{ $accountExternalName | quote }}
+  {{- end }}
+  parentId: {{ $ou.id }}
+  managementPolicies: {{ toJson $accountManagementPolicies }}
+  providerConfigRef:
+    name: {{ $state.organization.providerConfig.name }}
+    kind: {{ $state.organization.providerConfig.kind }}
+  {{- $accountTags := $account.tags | default dict }}
+  {{- $mergedTags := merge $state.organization.tags $accountTags }}
+  tags:
+    {{- range $tk, $tv := $mergedTags }}
+    {{ $tk }}: {{ quote $tv }}
+    {{- end }}
+  {{- end }}
+---
+{{- /* Usage: protect OU from deletion by this Account */}}
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-ou-%s-by-account-%s" $ou.resourceName $accountName }}
+  annotations:
+    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-account-%s" $ou.resourceName $accountName) }}
+spec:
+  replayDeletion: true
+  by:
+    apiVersion: aws.hops.ops.com.ai/v1alpha1
+    kind: Account
+    resourceRef:
+      name: {{ $accountName }}
+  of:
+    apiVersion: organizations.aws.m.upbound.io/v1beta1
+    kind: OrganizationalUnit
+    resourceRef:
+      name: {{ $ou.resourceName }}
+{{- end }}
+
+{{- end }}{{/* if $ou.ready */}}
+
+{{- end }}{{/* range $ou */}}
+
+{{- end }}{{/* if $state.organization.ous.render */}}

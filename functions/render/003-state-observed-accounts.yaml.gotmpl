@@ -1,0 +1,43 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Observed Accounts State
+# =======================
+# Extract account observations from $.observed.resources.
+# Sets $state.observed.accounts slice as map[name] -> {ready, id, adminRoleArn}.
+#
+
+{{- $raw := $.observed.resources | default dict }}
+{{- $eff := $state.spec.effective }}
+{{- $accounts := dict }}
+
+# Iterate over configured OUs to find accounts
+{{- range $ou := $eff.organizationalUnits }}
+  {{- range $account := ($ou.accounts | default list) }}
+    {{- $accountName := $account.name }}
+    {{- $resourceName := printf "account-%s" $accountName }}
+
+    {{- $entry := get $raw $resourceName | default dict }}
+    {{- $resource := $entry.resource | default dict }}
+    {{- $status := $resource.status | default dict }}
+
+    # Check readiness from conditions
+    {{- $ready := false }}
+    {{- range ($status.conditions | default list) }}
+      {{- if and (eq .type "Ready") (eq .status "True") }}
+        {{- $ready = true }}
+      {{- end }}
+    {{- end }}
+
+    {{- $accounts = set $accounts $accountName (dict
+      "ready" $ready
+      "id" ($status.accountId | default "")
+      "adminRoleArn" ($status.adminRoleArn | default "")
+      "resourceName" $resourceName
+    ) }}
+  {{- end }}
+{{- end }}
+
+# Set observed.accounts slice
+{{- $state = set $state "observed" (merge $state.observed (dict "accounts" $accounts)) }}

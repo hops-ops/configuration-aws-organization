@@ -1,0 +1,48 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Delegated Administrators Computed State
+# ========================================
+# Set $state.organization.delegatedAdmins slice with render flag and items.
+#
+
+{{- $eff := $state.spec.effective }}
+{{- $obs := $state.observed }}
+
+# Delegated admins render only when organization is ready
+{{- $orgReady := $obs.organization.ready }}
+{{- $render := and $orgReady (gt (len $eff.delegatedAdministrators) 0) }}
+
+# Build delegated admin items
+{{- $items := list }}
+
+{{- range $index, $admin := $eff.delegatedAdministrators }}
+  {{- $resourceName := printf "delegated-admin-%d" $index }}
+  {{- $accountName := $admin.accountRef.name }}
+
+  # Get observed state for this delegated admin
+  {{- $adminObs := get $obs.delegatedAdmins (toString $index) }}
+  {{- $adminReady := false }}
+  {{- if $adminObs }}
+    {{- $adminReady = $adminObs.ready }}
+  {{- end }}
+
+  # Build computed delegated admin item
+  {{- $adminItem := dict
+    "index" $index
+    "resourceName" $resourceName
+    "servicePrincipal" $admin.servicePrincipal
+    "accountName" $accountName
+    "ready" $adminReady
+  }}
+
+  {{- $items = append $items $adminItem }}
+{{- end }}
+
+# Set organization.delegatedAdmins slice
+{{- $delegatedAdminsSlice := dict
+  "render" $render
+  "items" $items
+}}
+{{- $state = set $state "organization" (merge $state.organization (dict "delegatedAdmins" $delegatedAdminsSlice)) }}

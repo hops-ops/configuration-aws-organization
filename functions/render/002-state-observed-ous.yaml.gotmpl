@@ -1,0 +1,42 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Observed Organizational Units State
+# ====================================
+# Extract OU observations from $.observed.resources.
+# Sets $state.observed.ous slice as map[path] -> {ready, id}.
+#
+
+{{- $raw := $.observed.resources | default dict }}
+{{- $eff := $state.spec.effective }}
+{{- $ous := dict }}
+
+# Iterate over configured OUs to build observations
+{{- range $eff.organizationalUnits }}
+  {{- $ouPath := .path }}
+  {{- $pathWithDashes := $ouPath | replace "/" "-" }}
+  {{- $resourceName := printf "ou-%s" ($pathWithDashes | lower) }}
+
+  {{- $entry := get $raw $resourceName | default dict }}
+  {{- $resource := $entry.resource | default dict }}
+  {{- $status := $resource.status | default dict }}
+  {{- $atProvider := $status.atProvider | default dict }}
+
+  # Check readiness from conditions
+  {{- $ready := false }}
+  {{- range ($status.conditions | default list) }}
+    {{- if and (eq .type "Ready") (eq .status "True") }}
+      {{- $ready = true }}
+    {{- end }}
+  {{- end }}
+
+  {{- $ous = set $ous $ouPath (dict
+    "ready" $ready
+    "id" ($atProvider.id | default "")
+    "resourceName" $resourceName
+  ) }}
+{{- end }}
+
+# Set observed.ous slice
+{{- $state = set $state "observed" (merge $state.observed (dict "ous" $ous)) }}

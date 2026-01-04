@@ -1,0 +1,27 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+#
+# Organization Resource Computed State
+# =====================================
+# Set $state.organization.org slice with render flag and settings.
+#
+
+{{- $eff := $state.spec.effective }}
+
+# Organization always renders
+{{- $render := true }}
+
+# Build org slice with settings
+{{- $orgSlice := dict
+  "render" $render
+  "managementPolicies" $eff.organization.managementPolicies
+  "externalName" $eff.externalName
+  "featureSet" $eff.organization.featureSet
+  "enabledPolicyTypes" $eff.organization.enabledPolicyTypes
+  "awsServiceAccessPrincipals" $eff.organization.awsServiceAccessPrincipals
+  "passThrough" $eff.organization.passThrough
+}}
+
+# Set organization.org slice
+{{- $state = set $state "organization" (merge $state.organization (dict "org" $orgSlice)) }}

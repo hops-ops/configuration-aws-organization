@@ -21,7 +21,6 @@
     {{- $entry := get $raw $resourceName | default dict }}
     {{- $resource := $entry.resource | default dict }}
     {{- $status := $resource.status | default dict }}
-    {{- $atProvider := $status.atProvider | default dict }}
 
     # Check readiness from conditions
     {{- $ready := false }}
@@ -31,10 +30,12 @@
       {{- end }}
     {{- end }}
 
+    # Account XRD reports accountId and organizationAccountAccessRoleArn directly in status
+    # (not nested under atProvider like managed resources)
     {{- $accounts = set $accounts $accountName (dict
       "ready" $ready
-      "id" ($atProvider.accountId | default "")
-      "adminRoleArn" ($atProvider.adminRoleArn | default "")
+      "id" ($status.accountId | default "")
+      "adminRoleArn" ($status.organizationAccountAccessRoleArn | default "")
       "resourceName" $resourceName
     ) }}
   {{- end }}

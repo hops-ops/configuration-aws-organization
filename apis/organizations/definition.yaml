@@ -182,6 +182,12 @@ spec:
                 type: object
                 description: Tags to apply to the organization and OUs.
                 x-kubernetes-preserve-unknown-fields: true
+              labels:
+                type: object
+                description: Custom labels applied to all managed resources. Merged with default labels (hops.ops.com.ai/managed, hops.ops.com.ai/<kind>).
+                additionalProperties:
+                  type: string
+                x-kubernetes-preserve-unknown-fields: true
             type: object
           status:
             properties:

@@ -15,6 +15,7 @@ apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: DelegatedAdministrator
 metadata:
   name: {{ $admin.resourceName }}
+  labels: {{ $state.organization.labels | toJson }}
   annotations:
     {{ setResourceNameAnnotation $admin.resourceName }}
 spec:
@@ -35,6 +36,7 @@ apiVersion: protection.crossplane.io/v1beta1
 kind: Usage
 metadata:
   name: {{ printf "of-account-%s-by-delegated-admin-%d" $admin.accountName $admin.index }}
+  labels: {{ $state.organization.labels | toJson }}
   annotations:
     {{ setResourceNameAnnotation (printf "usage-account-%s-by-delegated-admin-%d" $admin.accountName $admin.index) }}
 spec:

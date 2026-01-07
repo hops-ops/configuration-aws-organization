@@ -20,6 +20,12 @@
 # Extract organization settings
 {{- $organization := $spec.organization | default dict }}
 
+{{- /* Default labels: managed=true + <kind>=<name> */}}
+{{- $defaultLabels := dict
+  "hops.ops.com.ai/managed" "true"
+  (printf "hops.ops.com.ai/%s" (lower $xr.kind)) $metadata.name
+}}
+
 # Build effective spec with all defaults applied
 {{- $state := dict
   "spec" (dict
@@ -42,6 +48,7 @@
       "organizationalUnits" ($spec.organizationalUnits | default list)
       "delegatedAdministrators" ($spec.delegatedAdministrators | default list)
       "tags" (merge (dict "hops" "true") ($spec.tags | default dict))
+      "labels" (merge $defaultLabels ($spec.labels | default dict))
     )
   )
   "observed" (dict)

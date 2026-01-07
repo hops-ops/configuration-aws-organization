@@ -1,4 +1,4 @@
-# configuration-aws-organization
+# aws-organization
 
 Manage your AWS Organization, Organizational Units, and Accounts as a single resource. Define your account hierarchy declaratively and let Crossplane handle the rest.
 

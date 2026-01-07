@@ -9,7 +9,7 @@ spec:
   mode: Pipeline
   pipeline:
   - functionRef:
-      name: hops-ops-configuration-aws-organizationrender
+      name: hops-ops-aws-organizationrender
     step: render
   - functionRef:
       name: crossplane-contrib-function-auto-ready

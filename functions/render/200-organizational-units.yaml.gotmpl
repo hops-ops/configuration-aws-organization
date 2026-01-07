@@ -18,6 +18,7 @@ apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: OrganizationalUnit
 metadata:
   name: {{ $ou.resourceName }}
+  labels: {{ $state.organization.labels | toJson }}
   annotations:
     {{ setResourceNameAnnotation $ou.resourceName }}
     {{- if $ou.externalName }}
@@ -44,6 +45,7 @@ apiVersion: protection.crossplane.io/v1beta1
 kind: Usage
 metadata:
   name: {{ printf "of-org-%s-by-ou-%s" $state.organization.name $ou.resourceName }}
+  labels: {{ $state.organization.labels | toJson }}
   annotations:
     {{ setResourceNameAnnotation (printf "usage-org-by-%s" $ou.resourceName) }}
 spec:
@@ -64,6 +66,7 @@ apiVersion: protection.crossplane.io/v1beta1
 kind: Usage
 metadata:
   name: {{ printf "of-ou-%s-by-ou-%s" $ou.parentResourceName $ou.resourceName }}
+  labels: {{ $state.organization.labels | toJson }}
   annotations:
     {{ setResourceNameAnnotation (printf "usage-ou-%s-by-%s" $ou.parentResourceName $ou.resourceName) }}
 spec:
@@ -92,6 +95,7 @@ apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: Account
 metadata:
   name: {{ $accountName }}
+  labels: {{ $state.organization.labels | toJson }}
   annotations:
     {{ setResourceNameAnnotation (printf "account-%s" $accountName) }}
 spec:
@@ -120,6 +124,7 @@ apiVersion: protection.crossplane.io/v1beta1
 kind: Usage
 metadata:
   name: {{ printf "of-ou-%s-by-account-%s" $ou.resourceName $accountName }}
+  labels: {{ $state.organization.labels | toJson }}
   annotations:
     {{ setResourceNameAnnotation (printf "usage-ou-%s-by-account-%s" $ou.resourceName $accountName) }}
 spec:

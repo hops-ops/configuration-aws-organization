@@ -13,6 +13,7 @@ apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: Organization
 metadata:
   name: {{ $state.organization.name }}
+  labels: {{ $state.organization.labels | toJson }}
   annotations:
     {{ setResourceNameAnnotation "organization" }}
     {{- if $state.organization.org.externalName }}

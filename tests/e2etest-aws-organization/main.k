@@ -31,7 +31,7 @@ _test_account_external_name = "544051101726"
 # =============================================================================
 # Dynamic test resources - timestamped to allow concurrent test runs
 # =============================================================================
-_test_ou_name = "configuration-aws-organization-" + _now
+_test_ou_name = "aws-organization-" + _now
 
 _items = [
     metav1alpha1.E2ETest{

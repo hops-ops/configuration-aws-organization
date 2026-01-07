@@ -13,7 +13,7 @@ This repository publishes the `Organization` configuration package. Use this gui
 - `.gitops/`: GitOps automation usage.
 - `_output/`, `.up/`: Generated artifacts. Remove with `make clean` when needed.
 
-This package now depends on `configuration-aws-account` and can emit `Account` composites directly from OU definitions (rendered after the OU reports Ready).
+This package now depends on `aws-account` and can emit `Account` composites directly from OU definitions (rendered after the OU reports Ready).
 
 ## Rendering & Validating Compositions
 

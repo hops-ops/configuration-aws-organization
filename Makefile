@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-PACKAGE ?= configuration-aws-organization
+PACKAGE ?= aws-organization
 XRD_DIR := apis/organizations
 COMPOSITION := $(XRD_DIR)/composition.yaml
 DEFINITION := $(XRD_DIR)/definition.yaml

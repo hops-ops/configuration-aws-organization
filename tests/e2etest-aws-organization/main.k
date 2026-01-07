@@ -20,13 +20,14 @@ _base64_creds = base64.encode(_creds)
 _test_org_name = "hops-e2etest-org"
 _existing_org_id = "o-3lholziq1o"
 
-# Test OU - persistent, imported via externalName
-_test_ou_external_name = "ou-hdvp-fbcb7sbw"
+# Test OU - persistent, imported via imports.organizationalUnits
+_test_ou_path = "Test"
+_test_ou_id = "ou-hdvp-fbcb7sbw"
 
 # Test account - persistent, orphaned on delete
 _test_account_name = "configuration-aws-organization"
 _test_account_email = "configuration-aws-organization@ops.com.ai"
-_test_account_external_name = "544051101726"
+_test_account_id = "544051101726"
 
 # =============================================================================
 # Dynamic test resources - timestamped to allow concurrent test runs
@@ -46,31 +47,37 @@ _items = [
                         namespace: "default"
                     }
                     spec: {
-                        # Adopt the existing organization by ID
-                        externalName: _existing_org_id
+                        # Import existing resources via the flat imports object
+                        imports: {
+                            organization: _existing_org_id
+                            organizationalUnits: {
+                                _test_ou_path: _test_ou_id
+                            }
+                            accounts: {
+                                _test_account_name: _test_account_id
+                            }
+                        }
                         # Orphan only the Organization on deletion - AWS allows only one org per account
                         organization: {
                             managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                             # Enable IAM service access for centralized root access management
                             awsServiceAccessPrincipals: [
                                 "account.amazonaws.com"
-                                "iam.amazonaws.com", 
-                                "ipam.amazonaws.com", 
+                                "iam.amazonaws.com",
+                                "ipam.amazonaws.com",
                                 "sso.amazonaws.com",
                                 "ram.amazonaws.com"
                             ]
                         }
                         organizationalUnits: [
-                            # Test OU - persistent, imported via externalName
+                            # Test OU - persistent, imported via imports.organizationalUnits
                             {
-                                path: "Test"
-                                externalName: _test_ou_external_name
+                                path: _test_ou_path
                                 managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                                 accounts: [
                                     {
                                         name: _test_account_name
                                         email: _test_account_email
-                                        externalName: _test_account_external_name
                                         managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
                                     }
                                 ]

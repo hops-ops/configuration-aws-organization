@@ -86,7 +86,7 @@ spec:
 {{- /* Create accounts under this OU */}}
 {{- range $account := $ou.accounts }}
 {{- $accountName := $account.name }}
-{{- $accountExternalName := $account.externalName | default "" }}
+{{- $accountExternalName := get $state.organization.imports.accounts $accountName | default "" }}
 {{- $accountManagementPolicies := $account.managementPolicies | default $state.organization.managementPolicies }}
 {{- $overrideSpec := $account.overrideSpec | default dict }}
 {{- $hasOverride := gt (len $overrideSpec) 0 }}
@@ -104,7 +104,8 @@ spec:
   {{- else }}
   email: {{ $account.email | quote }}
   {{- if $accountExternalName }}
-  externalName: {{ $accountExternalName | quote }}
+  imports:
+    account: {{ $accountExternalName | quote }}
   {{- end }}
   parentId: {{ $ou.id }}
   managementPolicies: {{ toJson $accountManagementPolicies }}

@@ -33,12 +33,6 @@ spec:
                     default: default
                 required:
                   - name
-              externalName:
-                type: string
-                description: |
-                  Sets the crossplane.io/external-name annotation on the Organization resource.
-                  Use this to adopt an existing AWS Organization by specifying its ID (e.g., o-abc123xyz).
-                  When set, Crossplane will import the existing organization instead of creating a new one.
               managementPolicies:
                 description: ManagementPolicies for AWS resources. Defaults to ["*"] which includes all operations (Create, Observe, Update, Delete, LateInitialize). To orphan resources on deletion, use ["Create", "Observe", "Update", "LateInitialize"].
                 type: array
@@ -52,6 +46,32 @@ spec:
                     - Delete
                     - LateInitialize
                 default: ["*"]
+              imports:
+                type: object
+                description: |
+                  External names of existing AWS resources to import into Crossplane management.
+                  Use with managementPolicies excluding "Delete" to adopt without risk of deletion.
+                  Leave fields empty to create new resources.
+                properties:
+                  organization:
+                    type: string
+                    description: |
+                      Existing AWS Organization ID to import (e.g., o-abc123xyz).
+                      When set, Crossplane imports the existing organization instead of creating a new one.
+                  organizationalUnits:
+                    type: object
+                    description: |
+                      Map of OU paths to OU IDs. Keys are OU paths (e.g., "Security", "Workloads/Prod").
+                      Values are AWS OU IDs (e.g., "ou-abc123-xyz789").
+                    additionalProperties:
+                      type: string
+                  accounts:
+                    type: object
+                    description: |
+                      Map of account names to account IDs. Keys are account names as defined in organizationalUnits[].accounts[].name.
+                      Values are AWS Account IDs (e.g., "123456789012").
+                    additionalProperties:
+                      type: string
               organization:
                 type: object
                 description: |
@@ -93,11 +113,6 @@ spec:
                         OU path defining hierarchy (e.g., Security, Workloads/Prod).
                         Parent path must exist in the list for nested OUs.
                       pattern: ^[a-zA-Z0-9-]+(/[a-zA-Z0-9-]+)*$
-                    externalName:
-                      type: string
-                      description: |
-                        AWS Organizational Unit ID to adopt (e.g., ou-abc123-xyz789).
-                        When set, Crossplane imports the existing OU instead of creating a new one.
                     managementPolicies:
                       type: array
                       description: |
@@ -130,11 +145,6 @@ spec:
                           email:
                             type: string
                             description: AWS account email address. Must be unique across all AWS accounts.
-                          externalName:
-                            type: string
-                            description: |
-                              AWS Account ID to adopt (e.g., 123456789012).
-                              When set, Crossplane imports the existing account instead of creating a new one.
                           managementPolicies:
                             type: array
                             description: |

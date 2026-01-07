@@ -6,6 +6,7 @@ metadata:
   annotations:
     gotemplating.fn.crossplane.io/composition-resource-name: "organization"
     crossplane.io/composition-resource-name: "organization"
+    crossplane.io/external-name: "o-3lholziq1o"
 status:
   conditions:
     - type: Ready

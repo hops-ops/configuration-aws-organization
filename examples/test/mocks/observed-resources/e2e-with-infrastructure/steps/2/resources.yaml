@@ -7,6 +7,7 @@ metadata:
   annotations:
     gotemplating.fn.crossplane.io/composition-resource-name: "organization"
     crossplane.io/composition-resource-name: "organization"
+    crossplane.io/external-name: "o-3lholziq1o"
 status:
   conditions:
     - type: Ready
@@ -24,6 +25,7 @@ metadata:
   annotations:
     gotemplating.fn.crossplane.io/composition-resource-name: "ou-infrastructure"
     crossplane.io/composition-resource-name: "ou-infrastructure"
+    crossplane.io/external-name: "ou-abc123-infra"
 status:
   conditions:
     - type: Ready

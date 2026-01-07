@@ -1,3 +1,7 @@
+# Simulated observed resources for import-existing: Organization and OUs Ready
+# This mock simulates importing an existing organization and its OUs
+
+---
 apiVersion: organizations.aws.m.upbound.io/v1beta1
 kind: Organization
 metadata:
@@ -5,6 +9,7 @@ metadata:
   annotations:
     gotemplating.fn.crossplane.io/composition-resource-name: "organization"
     crossplane.io/composition-resource-name: "organization"
+    crossplane.io/external-name: "o-abc123xyz"
 status:
   conditions:
     - type: Ready
@@ -14,3 +19,33 @@ status:
     masterAccountId: "111111111111"
     roots:
       - id: r-root123
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: OrganizationalUnit
+metadata:
+  name: ou-security
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-security"
+    crossplane.io/composition-resource-name: "ou-security"
+    crossplane.io/external-name: "ou-abc1-security1"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: "ou-abc1-security1"
+---
+apiVersion: organizations.aws.m.upbound.io/v1beta1
+kind: OrganizationalUnit
+metadata:
+  name: ou-infrastructure
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "ou-infrastructure"
+    crossplane.io/composition-resource-name: "ou-infrastructure"
+    crossplane.io/external-name: "ou-abc1-infra123"
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+  atProvider:
+    id: "ou-abc1-infra123"

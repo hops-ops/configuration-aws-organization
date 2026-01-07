@@ -1,15 +1,31 @@
-# Import an existing AWS Organization
-# Use this when you already have an AWS Organization and want Crossplane to manage it
+# Import existing AWS Organization resources into Crossplane management.
+# managementPolicies excludes "Delete" to prevent accidental deletion.
 apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: Organization
 metadata:
   name: my-org
   namespace: default
 spec:
-  # External name adopts the existing organization
-  externalName: o-abc123xyz
-  # Default managementPolicies applies to OUs, accounts, delegated admins (includes Delete)
-  # managementPolicies: ["*"]  # default
+  # Exclude Delete to safely import without risk of accidental deletion
+  managementPolicies:
+    - Create
+    - Observe
+    - Update
+    - LateInitialize
+
+  # External names of existing AWS resources to import
+  imports:
+    # Organization ID (e.g., o-abc123xyz)
+    organization: o-abc123xyz
+    # Map of OU paths to OU IDs
+    organizationalUnits:
+      Security: ou-abc1-security1
+      Infrastructure: ou-abc1-infra123
+    # Map of account names to account IDs
+    accounts:
+      security-audit: "123456789012"
+      infrastructure-shared: "234567890123"
+
   # Orphan only the Organization on deletion - don't delete the actual AWS org
   # OUs and other child resources will still be deleted
   organization:
@@ -18,8 +34,16 @@ spec:
       - Observe
       - Update
       - LateInitialize
+
   organizationalUnits:
     - path: Security
+      accounts:
+        - name: security-audit
+          email: security-audit@example.com
     - path: Infrastructure
+      accounts:
+        - name: infrastructure-shared
+          email: infrastructure-shared@example.com
+
   tags:
     organization: my-org

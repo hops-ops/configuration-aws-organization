@@ -224,7 +224,7 @@ _test_organization_service_principals_override = metav1alpha1.CompositionTest {
 # External Name / Import Tests
 # =============================================================================
 
-# Test: externalName annotation set on Organization when importing
+# Test: imports.organization sets external-name annotation on Organization
 _test_external_name_on_organization = metav1alpha1.CompositionTest {
     metadata.name = "external-name-on-organization"
     spec = {
@@ -237,7 +237,9 @@ _test_external_name_on_organization = metav1alpha1.CompositionTest {
             kind = "Organization"
             metadata.name = "imported-org"
             spec = {
-                externalName = "o-abc123xyz"
+                imports = {
+                    organization = "o-abc123xyz"
+                }
             }
         }
         assertResources = [
@@ -555,7 +557,7 @@ _test_ou_management_policies_override = metav1alpha1.CompositionTest {
     }
 }
 
-# Test: OU externalName annotation set when importing
+# Test: imports.organizationalUnits sets external-name annotation on OU
 _test_ou_external_name = metav1alpha1.CompositionTest {
     metadata.name = "ou-external-name"
     spec = {
@@ -568,8 +570,13 @@ _test_ou_external_name = metav1alpha1.CompositionTest {
             kind = "Organization"
             metadata.name = "test-org"
             spec = {
+                imports = {
+                    organizationalUnits = {
+                        Infrastructure = "ou-abc123-infra"
+                    }
+                }
                 organizationalUnits = [
-                    {path = "Infrastructure", externalName = "ou-abc123-infra"}
+                    {path = "Infrastructure"}
                 ]
             }
         }

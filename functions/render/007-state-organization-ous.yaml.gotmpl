@@ -61,6 +61,9 @@
     {{- $ouId = $ouObs.id }}
   {{- end }}
 
+  # Look up OU external name from imports map using path as key
+  {{- $ouExternalName := get $eff.imports.organizationalUnits $ouPath | default "" }}
+
   # Build computed OU item
   {{- $ouItem := dict
     "path" $ouPath
@@ -72,7 +75,7 @@
     "canRender" $canRender
     "ready" $ouReady
     "id" $ouId
-    "externalName" ($ou.externalName | default "")
+    "externalName" $ouExternalName
     "managementPolicies" ($ou.managementPolicies | default $eff.managementPolicies)
     "accounts" ($ou.accounts | default list)
   }}

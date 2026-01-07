@@ -20,6 +20,9 @@
 # Extract organization settings
 {{- $organization := $spec.organization | default dict }}
 
+# Extract imports (external names for importing existing resources)
+{{- $imports := $spec.imports | default dict }}
+
 {{- /* Default labels: managed=true + <kind>=<name> */}}
 {{- $defaultLabels := dict
   "hops.ops.com.ai/managed" "true"
@@ -37,7 +40,11 @@
         "kind" $providerConfigKind
       )
       "managementPolicies" ($spec.managementPolicies | default (list "*"))
-      "externalName" ($spec.externalName | default "")
+      "imports" (dict
+        "organization" ($imports.organization | default "")
+        "organizationalUnits" ($imports.organizationalUnits | default dict)
+        "accounts" ($imports.accounts | default dict)
+      )
       "organization" (dict
         "managementPolicies" ($organization.managementPolicies | default ($spec.managementPolicies | default (list "*")))
         "featureSet" ($organization.featureSet | default "ALL")

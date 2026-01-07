@@ -35,11 +35,12 @@ metadata:
   name: my-org
   namespace: default
 spec:
-  # Import existing org - get ID from: aws organizations describe-organization
-  externalName: o-abc123xyz
-
   # Don't delete the org if this resource is deleted
   managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+
+  # Import existing resources - get ID from: aws organizations describe-organization
+  imports:
+    organization: o-abc123xyz
 
   # Enable trusted access for services you use
   organization:
@@ -70,8 +71,10 @@ metadata:
   name: acme
   namespace: default
 spec:
-  externalName: o-abc123xyz
   managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+
+  imports:
+    organization: o-abc123xyz
 
   organization:
     awsServiceAccessPrincipals:
@@ -129,7 +132,7 @@ organizationalUnits:
 
 ### Stage 4: Import Existing Accounts
 
-Already have accounts? Import them with `externalName`.
+Already have accounts? Import them with the `imports` object.
 
 **Why import?**
 - Preserves existing resources and configurations
@@ -137,22 +140,36 @@ Already have accounts? Import them with `externalName`.
 - Gradually bring accounts under Crossplane management
 
 ```yaml
-organizationalUnits:
-  - path: Security
-    externalName: ou-abc1-security  # Import existing OU
-    accounts:
-      - name: acme-security
-        email: aws-security@acme.example.com
-        externalName: "111111111111"  # Import existing account
-        managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: Organization
+metadata:
+  name: acme
+  namespace: default
+spec:
+  managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
 
-  - path: Workloads/Prod
-    externalName: ou-abc1-prod
+  # Import existing resources by their external names
+  imports:
+    organization: o-abc123xyz
+    organizationalUnits:
+      Security: ou-abc1-security
+      "Workloads/Prod": ou-abc1-prod
     accounts:
-      - name: acme-prod
-        email: aws-prod@acme.example.com
-        externalName: "222222222222"
-        managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+      acme-security: "111111111111"
+      acme-prod: "222222222222"
+
+  organizationalUnits:
+    - path: Security
+      accounts:
+        - name: acme-security
+          email: aws-security@acme.example.com
+          managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+
+    - path: Workloads/Prod
+      accounts:
+        - name: acme-prod
+          email: aws-prod@acme.example.com
+          managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
 ```
 
 ### Stage 5: Delegate Administration
@@ -172,8 +189,10 @@ metadata:
   name: acme
   namespace: default
 spec:
-  externalName: o-abc123xyz
   managementPolicies: ["Create", "Observe", "Update", "LateInitialize"]
+
+  imports:
+    organization: o-abc123xyz
 
   organization:
     awsServiceAccessPrincipals:

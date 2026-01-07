@@ -16,7 +16,7 @@
 {{- $orgSlice := dict
   "render" $render
   "managementPolicies" $eff.organization.managementPolicies
-  "externalName" $eff.externalName
+  "externalName" $eff.imports.organization
   "featureSet" $eff.organization.featureSet
   "enabledPolicyTypes" $eff.organization.enabledPolicyTypes
   "awsServiceAccessPrincipals" $eff.organization.awsServiceAccessPrincipals

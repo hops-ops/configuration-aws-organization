@@ -7,8 +7,14 @@ metadata:
   name: hops-e2e-test
   namespace: default
 spec:
-  # Adopt the existing organization by ID
-  externalName: o-3lholziq1o
+  # Import existing resources via the flat imports object
+  imports:
+    organization: o-3lholziq1o
+    organizationalUnits:
+      Infrastructure: ou-abc123-infra
+    accounts:
+      hops: "123456789012"
+
   # Orphan the Organization on deletion
   organization:
     managementPolicies:
@@ -16,17 +22,17 @@ spec:
       - Observe
       - Update
       - LateInitialize
+
   organizationalUnits:
-    # Infrastructure OU - persistent, imported via externalName
+    # Infrastructure OU - persistent, imported via imports.organizationalUnits
     - path: Infrastructure
-      externalName: ou-abc123-infra
       managementPolicies:
         - Create
         - Observe
         - Update
         - LateInitialize
       accounts:
-        # Hops account - persistent, orphan on delete
+        # Hops account - persistent, orphan on delete (imported via imports.accounts)
         - name: hops
           email: hops@example.com
           managementPolicies:
@@ -40,11 +46,13 @@ spec:
       accounts:
         - name: test-account
           email: test@example.com
+
   # Delegate IPAM to the persistent hops account
   delegatedAdministrators:
     - servicePrincipal: ipam.amazonaws.com
       accountRef:
         name: hops
+
   tags:
     e2etest: "true"
     environment: test

@@ -23,7 +23,7 @@ permissions:
 jobs:
 
   validate:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/validate.yaml@v2.7.0
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/validate.yaml@v2.12.2
     with:
       examples: |
         [
@@ -44,10 +44,10 @@ jobs:
       error_on_missing_schemas: true
 
   test:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/test.yaml@v2.7.0
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/test.yaml@v2.12.2
 
   e2e:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/e2e.yaml@v2.7.0
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/e2e.yaml@v2.12.2
     with:
       aws: true
       aws-use-oidc: true

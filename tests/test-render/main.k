@@ -858,13 +858,16 @@ _test_default_hops_tag = metav1alpha1.CompositionTest {
                 apiVersion = "organizations.aws.m.upbound.io/v1beta1"
                 kind = "OrganizationalUnit"
                 metadata.name = "ou-security"
-                spec.forProvider.tags = {hops = "true"}
+                spec.forProvider.tags = {
+                    "hops.ops.com.ai/managed" = "true"
+                    "hops.ops.com.ai/organization" = "test-org"
+                }
             }
         ]
     }
 }
 
-# Test: User tags merge with default hops tag
+# Test: User tags merge with default managed/organization tags
 _test_user_tags_merge_with_defaults = metav1alpha1.CompositionTest {
     metadata.name = "user-tags-merge-with-defaults"
     spec = {
@@ -908,7 +911,8 @@ _test_user_tags_merge_with_defaults = metav1alpha1.CompositionTest {
                 kind = "OrganizationalUnit"
                 metadata.name = "ou-security"
                 spec.forProvider.tags = {
-                    hops = "true"
+                    "hops.ops.com.ai/managed" = "true"
+                    "hops.ops.com.ai/organization" = "test-org"
                     environment = "production"
                     team = "platform"
                 }

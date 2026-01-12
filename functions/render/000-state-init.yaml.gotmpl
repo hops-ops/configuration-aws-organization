@@ -11,6 +11,7 @@
 {{- $xr := getCompositeResource . }}
 {{- $metadata := $xr.metadata | default dict }}
 {{- $spec := $xr.spec | default dict }}
+{{- $name := $metadata.name | default "" }}
 
 # Extract providerConfigRef with defaults
 {{- $providerConfigRef := $spec.providerConfigRef | default dict }}
@@ -20,18 +21,20 @@
 # Extract organization settings
 {{- $organization := $spec.organization | default dict }}
 
-{{- /* Default labels: managed=true + <kind>=<name> */}}
-{{- $defaultLabels := dict
+{{- /* Default labels/tags: managed=true + <kind>=<name> */}}
+{{- $defaults := dict
   "hops.ops.com.ai/managed" "true"
-  (printf "hops.ops.com.ai/%s" (lower $xr.kind)) $metadata.name
+  (printf "hops.ops.com.ai/%s" (lower $xr.kind)) $name
 }}
+{{- $labels := merge $defaults ($spec.labels | default dict) }}
+{{- $tags := merge $defaults ($spec.tags | default dict) }}
 
 # Build effective spec with all defaults applied
 {{- $state := dict
   "spec" (dict
     "raw" $spec
     "effective" (dict
-      "name" $metadata.name
+      "name" $name
       "providerConfigRef" (dict
         "name" $providerConfigName
         "kind" $providerConfigKind
@@ -47,8 +50,8 @@
       )
       "organizationalUnits" ($spec.organizationalUnits | default list)
       "delegatedAdministrators" ($spec.delegatedAdministrators | default list)
-      "tags" (merge (dict "hops" "true") ($spec.tags | default dict))
-      "labels" (merge $defaultLabels ($spec.labels | default dict))
+      "tags" $tags
+      "labels" $labels
     )
   )
   "observed" (dict)

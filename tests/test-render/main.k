@@ -975,7 +975,7 @@ _test_usage_protects_org_from_ou = metav1alpha1.CompositionTest {
             {
                 apiVersion = "protection.crossplane.io/v1beta1"
                 kind = "Usage"
-                metadata.name = "of-org-test-org-by-ou-ou-security"
+                metadata.name = "delete-ou-security-before-test-org"
                 spec = {
                     replayDeletion = True
                     by = {
@@ -1059,7 +1059,7 @@ _test_usage_protects_parent_ou_from_child = metav1alpha1.CompositionTest {
             {
                 apiVersion = "protection.crossplane.io/v1beta1"
                 kind = "Usage"
-                metadata.name = "of-ou-ou-workloads-by-ou-ou-workloads-prod"
+                metadata.name = "delete-ou-workloads-prod-before-ou-workloads"
                 spec = {
                     replayDeletion = True
                     by = {
@@ -1133,7 +1133,7 @@ _test_usage_protects_ou_from_account = metav1alpha1.CompositionTest {
             {
                 apiVersion = "protection.crossplane.io/v1beta1"
                 kind = "Usage"
-                metadata.name = "of-ou-ou-infrastructure-by-account-hops-account"
+                metadata.name = "delete-hops-account-before-ou-infrastructure"
                 spec = {
                     replayDeletion = True
                     by = {
@@ -1304,7 +1304,7 @@ _test_usage_protects_account_from_delegated_admin = metav1alpha1.CompositionTest
             {
                 apiVersion = "protection.crossplane.io/v1beta1"
                 kind = "Usage"
-                metadata.name = "of-account-hops-account-by-delegated-admin-0"
+                metadata.name = "delete-delegated-admin-0-before-hops-account"
                 spec = {
                     replayDeletion = True
                     by = {

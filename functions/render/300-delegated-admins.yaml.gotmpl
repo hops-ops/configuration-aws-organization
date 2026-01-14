@@ -29,16 +29,16 @@ spec:
     name: {{ $state.organization.providerConfig.name }}
     kind: {{ $state.organization.providerConfig.kind }}
 
-{{- /* Usage: Account protected by DelegatedAdministrator */}}
+{{- /* Usage: Delete DelegatedAdministrator before Account */}}
 {{- if $admin.ready }}
 ---
 apiVersion: protection.crossplane.io/v1beta1
 kind: Usage
 metadata:
-  name: {{ printf "of-account-%s-by-delegated-admin-%d" $admin.accountName $admin.index }}
+  name: {{ printf "delete-%s-before-%s" $admin.resourceName $admin.accountName }}
   labels: {{ $state.organization.labels | toJson }}
   annotations:
-    {{ setResourceNameAnnotation (printf "usage-account-%s-by-delegated-admin-%d" $admin.accountName $admin.index) }}
+    {{ setResourceNameAnnotation (printf "delete-%s-before-%s" $admin.resourceName $admin.accountName) }}
 spec:
   replayDeletion: true
   by:

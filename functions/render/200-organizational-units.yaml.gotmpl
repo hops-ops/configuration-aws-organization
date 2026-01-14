@@ -38,16 +38,16 @@ spec:
 {{- /* Once OU is ready, create Usage resources and Accounts */}}
 {{- if $ou.ready }}
 
-{{- /* Usage: protect Organization or parent OU from deletion by this OU */}}
+{{- /* Usage: Delete OU before Organization or parent OU */}}
 {{- if eq $ou.depth 1 }}
 ---
 apiVersion: protection.crossplane.io/v1beta1
 kind: Usage
 metadata:
-  name: {{ printf "of-org-%s-by-ou-%s" $state.organization.name $ou.resourceName }}
+  name: {{ printf "delete-%s-before-%s" $ou.resourceName $state.organization.name }}
   labels: {{ $state.organization.labels | toJson }}
   annotations:
-    {{ setResourceNameAnnotation (printf "usage-org-by-%s" $ou.resourceName) }}
+    {{ setResourceNameAnnotation (printf "delete-%s-before-org" $ou.resourceName) }}
 spec:
   replayDeletion: true
   by:
@@ -65,10 +65,10 @@ spec:
 apiVersion: protection.crossplane.io/v1beta1
 kind: Usage
 metadata:
-  name: {{ printf "of-ou-%s-by-ou-%s" $ou.parentResourceName $ou.resourceName }}
+  name: {{ printf "delete-%s-before-%s" $ou.resourceName $ou.parentResourceName }}
   labels: {{ $state.organization.labels | toJson }}
   annotations:
-    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-%s" $ou.parentResourceName $ou.resourceName) }}
+    {{ setResourceNameAnnotation (printf "delete-%s-before-%s" $ou.resourceName $ou.parentResourceName) }}
 spec:
   replayDeletion: true
   by:
@@ -119,14 +119,14 @@ spec:
     {{- end }}
   {{- end }}
 ---
-{{- /* Usage: protect OU from deletion by this Account */}}
+{{- /* Usage: Delete Account before OU */}}
 apiVersion: protection.crossplane.io/v1beta1
 kind: Usage
 metadata:
-  name: {{ printf "of-ou-%s-by-account-%s" $ou.resourceName $accountName }}
+  name: {{ printf "delete-%s-before-%s" $accountName $ou.resourceName }}
   labels: {{ $state.organization.labels | toJson }}
   annotations:
-    {{ setResourceNameAnnotation (printf "usage-ou-%s-by-account-%s" $ou.resourceName $accountName) }}
+    {{ setResourceNameAnnotation (printf "delete-%s-before-%s" $accountName $ou.resourceName) }}
 spec:
   replayDeletion: true
   by:

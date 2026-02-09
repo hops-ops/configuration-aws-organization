@@ -9,7 +9,7 @@ metadata:
 spec:
   dependsOn:
   - provider: xpkg.crossplane.io/crossplane-contrib/provider-aws-organizations
-    version: ">=v2.3.0"
+    version: ">=v2.4.0"
   - configuration: ghcr.io/hops-ops/aws-account
     version: ">=v0.15.0"
   - function: xpkg.crossplane.io/crossplane-contrib/function-auto-ready
